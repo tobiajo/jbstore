@@ -20,7 +20,7 @@ public class Main {
         Serializers.register(THeader.class, "netS");
         Serializers.register(Msg.class, "msgS");
     }
-    
+
     public static void main(String[] args) {
         try {
             if (args.length == 2) { // start creator

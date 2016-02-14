@@ -3,7 +3,6 @@ package se.kth.id2203.jbstore.network;
 import com.google.common.base.Optional;
 import io.netty.buffer.ByteBuf;
 import org.apache.commons.lang3.SerializationUtils;
-import se.kth.id2203.jbstore.network.Msg;
 import se.sics.kompics.network.netty.serialization.Serializer;
 import se.sics.kompics.network.netty.serialization.Serializers;
 import se.sics.test.THeader;
