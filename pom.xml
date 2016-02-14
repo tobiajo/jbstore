@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>se.sics.test</groupId>
-    <artifactId>ping-pong</artifactId>
+    <groupId>se.kth.id2203.jbstore</groupId>
+    <artifactId>jbstore</artifactId>
     <packaging>jar</packaging>
     <version>1.0-SNAPSHOT</version>
 
-    <name>PingPong</name>
+    <name>JBstore</name>
     <description>
-        Ping Pong
+        A Fault Tolerant Distributed KV Store
     </description>
         
     <properties>
-        <java.compiler.version>1.7</java.compiler.version>
+        <java.compiler.version>1.8</java.compiler.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <kompics.version>0.9.1-SNAPSHOT</kompics.version>
     </properties>
@@ -54,6 +54,12 @@
             <version>1.7.5</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.4</version>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -69,7 +75,7 @@
                     <target>${java.compiler.version}</target>
                     <debug>true</debug>
                     <optimize>true</optimize>
-                    <showDeprecations>true</showDeprecations>
+                    <!-- <showDeprecations>true</showDeprecations> -->
                 </configuration>
             </plugin>
             
