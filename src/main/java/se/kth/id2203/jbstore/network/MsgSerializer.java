@@ -24,7 +24,7 @@ public class MsgSerializer implements Serializer {
         buf.writeByte(msg.desc);                                                    // write byte
         byte[] data = SerializationUtils.serialize(msg.body);
         buf.writeInt(data.length);                                                  // write int
-        buf.writeBytes(data);                                                       // write x * int
+        buf.writeBytes(data);                                                       // write x * byte
     }
 
     @Override
@@ -34,7 +34,7 @@ public class MsgSerializer implements Serializer {
         byte desc = buf.readByte();                                                 // read byte
         byte[] data = new byte[buf.readInt()];                                      // read int
         for (int i = 0; i < data.length; i++) {
-            data[i] = buf.readByte();                                               // write x * int
+            data[i] = buf.readByte();                                               // read x * byte
         }
         return new Msg(header.src, header.dst, time, desc, (Serializable) SerializationUtils.deserialize(data));
     }
