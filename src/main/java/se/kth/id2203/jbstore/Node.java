@@ -31,16 +31,16 @@ public class Node extends ComponentDefinition {
         @Override
         public void handle(Start start) {
             if (member != null) {
-                time++;
-                trigger(new Msg(self, member, time, Msg.JOIN, "Let me in"), net);
-                LOG.info("Sent({}): {}, {}, {}", time, member, Msg.toString(Msg.JOIN), "Let me in");
+                Msg msg = new Msg(self, member, ++time, Msg.JOIN, "Let me in");
+                trigger(msg, net);
+                LOG.info("Sent({}): {}, {}, {}", time, msg.header.dst, msg.descString(), msg.body);
             }
         }
     };
     Handler<Msg> msgHandler = new Handler<Msg>() {
         public void handle(Msg msg) {
             time = Math.max(time, msg.time) + 1;
-            LOG.info("Received({}): {}, {}, {}", time, msg.header.src, Msg.toString(msg.desc), msg.body);
+            LOG.info("Received({}): {}, {}, {}", time, msg.header.src, msg.descString(), msg.body);
         }
     };
 

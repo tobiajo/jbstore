@@ -22,7 +22,7 @@ public class Msg extends TMessage {
         this.body = body;
     }
 
-    public static String toString(byte desc) {
+    public String descString() {
         switch (desc) {
             case JOIN:
                 return "JOIN";
