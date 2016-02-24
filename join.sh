@@ -15,4 +15,4 @@ else
     exit 1
 fi
 
-mvn exec:java -Dexec.mainClass="se.kth.id2203.jbstore.Main" -Dexec.args="$a $b $c $d"
+mvn exec:java -Dexec.mainClass="se.kth.id2203.jbstore.NodeLauncher" -Dexec.args="$a $b $c $d"

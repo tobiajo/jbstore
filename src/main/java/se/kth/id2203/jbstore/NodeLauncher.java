@@ -9,7 +9,7 @@ import se.sics.test.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-public class Main {
+public class NodeLauncher {
 
     static {
         // register
@@ -27,7 +27,7 @@ public class Main {
                 InetAddress ip = InetAddress.getByName(args[0]);
                 int port = Integer.parseInt(args[1]);
                 TAddress self = new TAddress(ip, port);
-                Kompics.createAndStart(NodeParent.class, new NodeParent.Init(self, null), 2);
+                Kompics.createAndStart(NodeHost.class, new NodeHost.Init(self, null), 1);
                 System.out.println("Starting creator at " + self);
                 // no shutdown this time...act like a server and keep running until externally exited
             } else if (args.length == 4) { // start joiner
@@ -37,7 +37,7 @@ public class Main {
                 InetAddress memberIp = InetAddress.getByName(args[2]);
                 int memberPort = Integer.parseInt(args[3]);
                 TAddress member = new TAddress(memberIp, memberPort);
-                Kompics.createAndStart(NodeParent.class, new NodeParent.Init(self, member), 2);
+                Kompics.createAndStart(NodeHost.class, new NodeHost.Init(self, member), 2);
                 System.out.println("Starting joiner at" + self + " to " + member);
                 try {
                     Thread.sleep(10000);
