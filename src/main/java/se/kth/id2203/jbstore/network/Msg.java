@@ -10,6 +10,10 @@ public class Msg extends TMessage {
 
     public static final byte JOIN = 0;
     public static final byte VIEW = 1;
+    public static final byte GET = 2;
+    public static final byte PUT = 3;
+    public static final byte VALUE = 4;
+    public static final byte GET_VIEW = 5;
 
     public final long time;
     public final byte desc;
@@ -28,6 +32,14 @@ public class Msg extends TMessage {
                 return "JOIN";
             case VIEW:
                 return "VIEW";
+            case GET:
+                return "GET";
+            case PUT:
+                return "PUT";
+            case VALUE:
+                return "VALUE";
+            case GET_VIEW:
+                return "GET_VIEW";
             default:
                 return null;
         }

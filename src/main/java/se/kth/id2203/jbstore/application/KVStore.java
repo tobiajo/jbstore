@@ -1,5 +1,17 @@
 package se.kth.id2203.jbstore.application;
 
-import se.sics.kompics.ComponentDefinition;
+import java.io.Serializable;
 
-public class KVStore extends ComponentDefinition {}
+public class KVStore {
+
+    public void PUT(String key, Serializable value){}
+
+    /**
+     *
+     * @param key
+     * @return existing value or null if not found
+     */
+    public Serializable GET(String key){
+        return null;
+    }
+}

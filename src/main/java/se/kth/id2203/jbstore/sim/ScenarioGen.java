@@ -1,5 +1,6 @@
 package se.kth.id2203.jbstore.sim;
 
+import se.kth.id2203.jbstore.ClientParent;
 import se.kth.id2203.jbstore.NodeParent;
 import se.sics.kompics.Init;
 import se.sics.kompics.network.Address;
@@ -97,6 +98,46 @@ public class ScenarioGen {
         }
     };
 
+    static Operation2 startClientOp = new Operation2<StartNodeEvent, Integer, Integer>() {
+
+        @Override
+        public StartNodeEvent generate(final Integer self, final Integer member) {
+            return new StartNodeEvent() {
+                TAddress selfAdr;
+                TAddress memberAdr;
+
+                {
+                    try {
+                        selfAdr = new TAddress(InetAddress.getByName(IP_NET + self), PORT);
+                        memberAdr = new TAddress(InetAddress.getByName(IP_NET + member), PORT);
+                    } catch (UnknownHostException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                }
+
+                @Override
+                public Address getNodeAddress() {
+                    return selfAdr;
+                }
+
+                @Override
+                public Class getComponentDefinition() {
+                    return ClientParent.class;
+                }
+
+                @Override
+                public Init getComponentInit() {
+                    return new ClientParent.Init(selfAdr, memberAdr);
+                }
+
+                @Override
+                public String toString() {
+                    return "StartClient<" + selfAdr.toString() + ">";
+                }
+            };
+        }
+    };
+
     public static SimulationScenario simpleCluster() {
         SimulationScenario scen = new SimulationScenario() {
             {
@@ -113,14 +154,23 @@ public class ScenarioGen {
                 StochasticProcess joiner = new StochasticProcess() {
                     {
                         eventInterArrivalTime(constant(1000));
-                        for (int i = 0; i < 5; i++) {
+                        for (int i = 0; i < 4; i++) {
                             raise(1, startJoinerOp, joinerIp, creatorIp);
                         }
                     }
                 };
 
+                StochasticProcess client = new StochasticProcess() {
+                    {
+                        eventInterArrivalTime(constant(1000));
+                        raise(1, startClientOp, joinerIp, creatorIp);
+
+                    }
+                };
+
                 creator.start();
                 joiner.startAfterTerminationOf(1000, creator);
+                client.startAfterTerminationOf(1000, joiner);
                 terminateAfterTerminationOf(10000, joiner);
             }
         };
