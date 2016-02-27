@@ -13,6 +13,7 @@ public class KVStorePort extends PortType {
         request(Read.class);
         request(Write.class);
         indication(Value.class);
+        indication(Ack.class);
     }
 
     public static class Init implements KompicsEvent {
@@ -54,6 +55,14 @@ public class KVStorePort extends PortType {
         public Value(TAddress src, Serializable value) {
             this.src = src;
             this.value = value;
+        }
+    }
+
+    public static class Ack implements KompicsEvent{
+        public final long rid;
+
+        public Ack(long rid) {
+            this.rid = rid;
         }
     }
 }
