@@ -18,7 +18,7 @@ import java.util.Map;
 
 public class Node extends ComponentDefinition {
 
-    private final Logger logger;
+    private final Log log;
     private final Positive<Network> net = requires(Network.class);
     private final Positive<Timer> timer = requires(Timer.class);
     private final KVStore store = new KVStore();
@@ -37,7 +37,7 @@ public class Node extends ComponentDefinition {
         this.member = init.member;
         this.id = init.id;
         this.n = init.n;
-        logger = LoggerFactory.getLogger("Node" + id);
+        log = new Log("Node" + id);
         subscribe(startHandler, control);
         subscribe(msgHandler, net);
     }
@@ -49,7 +49,7 @@ public class Node extends ComponentDefinition {
                 //Joining node
                 Msg msg = new Msg(self, member, ++time, Msg.JOIN, id);
                 trigger(msg, net);
-                msg.log(logger, "Sent");
+                log.info("Sent", time, msg.toString());
             } else {
                 //Creator node
                 view = new HashMap<>();
@@ -62,7 +62,7 @@ public class Node extends ComponentDefinition {
         public void handle(Msg msg) {
             Msg response;
             time = Math.max(time, msg.time) + 1;
-            msg.log(logger, "Rcvd");
+            log.info("Rcvd", time, msg.toString());
 
             switch (msg.desc) {
                 case Msg.GET:
@@ -70,7 +70,7 @@ public class Node extends ComponentDefinition {
                     Serializable value = store.get(getKey);
                     response = new Msg(self, msg.getSource(), ++time, Msg.VALUE, value);
                     trigger(response, net);
-                    response.log(logger, "Sent");
+                    log.info("Sent", time, response.toString());
                     break;
                 case Msg.PUT:
                     Serializable[] keyValue = (Serializable[]) msg.body;
@@ -88,7 +88,7 @@ public class Node extends ComponentDefinition {
                         for (Map.Entry<Integer, TAddress> entry : view.entrySet()) {
                             response = new Msg(self, entry.getValue(), time, Msg.VIEW, view);
                             trigger(response, net);
-                            response.log(logger, "Sent");
+                            log.info("Sent", time, response.toString());
                         }
                     }
                     break;
@@ -98,7 +98,7 @@ public class Node extends ComponentDefinition {
                 case Msg.GET_VIEW:
                     response = new Msg(self, msg.getSource(), ++time, Msg.VIEW, view);
                     trigger(response, net);
-                    response.log(logger, "Sent");
+                    log.info("Sent", time, response.toString());
                     break;
             }
         }
