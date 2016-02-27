@@ -1,7 +1,7 @@
 package se.kth.id2203.jbstore.sim;
 
-import se.kth.id2203.jbstore.ClientParent;
-import se.kth.id2203.jbstore.NodeParent;
+import se.kth.id2203.jbstore.system.ClientParent;
+import se.kth.id2203.jbstore.system.NodeParent;
 import se.sics.kompics.Init;
 import se.sics.kompics.network.Address;
 import se.sics.kompics.simulator.SimulationScenario;
@@ -19,6 +19,7 @@ public class ScenarioGen {
 
     public static final String IP_NET = "240.0.0.";
     public static final int PORT = 0;
+    public static final int NODES = 5;
 
     static Operation1 startCreatorOp = new Operation1<StartNodeEvent, Integer>() {
 
@@ -47,9 +48,9 @@ public class ScenarioGen {
 
                 @Override
                 public Init getComponentInit() {
-                    return new NodeParent.Init(selfAdr, null);
+                    return new NodeParent.Init(selfAdr, null, self, NODES);
                 }
-                
+
                 @Override
                 public String toString() {
                     return "StartCreator<" + selfAdr.toString() + ">";
@@ -57,7 +58,7 @@ public class ScenarioGen {
             };
         }
     };
-    
+
     static Operation2 startJoinerOp = new Operation2<StartNodeEvent, Integer, Integer>() {
 
         @Override
@@ -87,9 +88,9 @@ public class ScenarioGen {
 
                 @Override
                 public Init getComponentInit() {
-                    return new NodeParent.Init(selfAdr, memberAdr);
+                    return new NodeParent.Init(selfAdr, memberAdr, self, NODES);
                 }
-                
+
                 @Override
                 public String toString() {
                     return "StartJoiner<" + selfAdr.toString() + ">";

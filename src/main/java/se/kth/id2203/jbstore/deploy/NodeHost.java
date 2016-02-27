@@ -1,5 +1,6 @@
-package se.kth.id2203.jbstore;
+package se.kth.id2203.jbstore.deploy;
 
+import se.kth.id2203.jbstore.system.NodeParent;
 import se.sics.kompics.Channel;
 import se.sics.kompics.Component;
 import se.sics.kompics.network.Network;

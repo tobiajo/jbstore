@@ -1,10 +1,12 @@
-package se.kth.id2203.jbstore.network;
+package se.kth.id2203.jbstore.system.network;
 
 import se.sics.kompics.network.Transport;
 import se.sics.test.TAddress;
 import se.sics.test.TMessage;
 
 import java.io.Serializable;
+
+import org.slf4j.Logger;
 
 public class Msg extends TMessage {
 
@@ -42,6 +44,17 @@ public class Msg extends TMessage {
                 return "GET_VIEW";
             default:
                 return null;
+        }
+    }
+
+    public void log(Logger logger, String event) {
+        switch (event) {
+            case "Sent":
+                logger.info("Sent({}) to {}:\t{}, {}", time, header.dst, descString(), body);
+                break;
+            case "Rcvd":
+                logger.info("Rcvd({}) fr {}:\t{}, {}", time, header.src, descString(), body);
+                break;
         }
     }
 }

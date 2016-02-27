@@ -1,4 +1,4 @@
-package se.kth.id2203.jbstore;
+package se.kth.id2203.jbstore.system;
 
 import se.sics.kompics.Channel;
 import se.sics.kompics.Component;

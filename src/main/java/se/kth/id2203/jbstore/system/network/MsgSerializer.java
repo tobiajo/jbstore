@@ -1,4 +1,4 @@
-package se.kth.id2203.jbstore.network;
+package se.kth.id2203.jbstore.system.network;
 
 import com.google.common.base.Optional;
 import io.netty.buffer.ByteBuf;

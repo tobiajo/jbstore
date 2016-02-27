@@ -1,4 +1,4 @@
-package se.kth.id2203.jbstore.membership;
+package se.kth.id2203.jbstore.system.membership;
 
 import se.sics.kompics.ComponentDefinition;
 

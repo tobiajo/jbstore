@@ -1,7 +1,7 @@
-package se.kth.id2203.jbstore;
+package se.kth.id2203.jbstore.deploy;
 
-import se.kth.id2203.jbstore.network.Msg;
-import se.kth.id2203.jbstore.network.MsgSerializer;
+import se.kth.id2203.jbstore.system.network.Msg;
+import se.kth.id2203.jbstore.system.network.MsgSerializer;
 import se.sics.kompics.Kompics;
 import se.sics.kompics.network.netty.serialization.Serializers;
 import se.sics.test.*;
@@ -27,7 +27,7 @@ public class NodeLauncher {
                 InetAddress ip = InetAddress.getByName(args[0]);
                 int port = Integer.parseInt(args[1]);
                 TAddress self = new TAddress(ip, port);
-                Kompics.createAndStart(NodeHost.class, new NodeHost.Init(self, null), 1);
+                Kompics.createAndStart(NodeHost.class, new NodeHost.Init(self, null, 0, 2), 1);
                 System.out.println("Starting creator at " + self);
                 // no shutdown this time...act like a server and keep running until externally exited
             } else if (args.length == 4) { // start joiner
@@ -37,7 +37,7 @@ public class NodeLauncher {
                 InetAddress memberIp = InetAddress.getByName(args[2]);
                 int memberPort = Integer.parseInt(args[3]);
                 TAddress member = new TAddress(memberIp, memberPort);
-                Kompics.createAndStart(NodeHost.class, new NodeHost.Init(self, member), 2);
+                Kompics.createAndStart(NodeHost.class, new NodeHost.Init(self, member, 1, 2), 2);
                 System.out.println("Starting joiner at" + self + " to " + member);
                 try {
                     Thread.sleep(10000);

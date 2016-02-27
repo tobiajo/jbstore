@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# TODO: update for new nodes
 
 if [ $# -eq 4 ]; then
     a=$1
@@ -15,4 +16,4 @@ else
     exit 1
 fi
 
-mvn exec:java -Dexec.mainClass="se.kth.id2203.jbstore.NodeLauncher" -Dexec.args="$a $b $c $d"
+mvn exec:java -Dexec.mainClass="se.kth.id2203.jbstore.deploy.NodeLauncher" -Dexec.args="$a $b $c $d"
