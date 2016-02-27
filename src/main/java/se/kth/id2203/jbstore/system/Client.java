@@ -15,7 +15,7 @@ import java.util.HashMap;
 
 public class Client extends ComponentDefinition {
 
-    private final Logger logger;
+    private final Log log;
     private final Positive<Network> net = requires(Network.class);
     private final Positive<Timer> timer = requires(Timer.class);
     private final TAddress self;
@@ -27,7 +27,7 @@ public class Client extends ComponentDefinition {
     public Client(Init init) {
         this.self = init.self;
         this.member = init.member;
-        logger = LoggerFactory.getLogger("Clnt0");
+        log = new Log("Clnt0");
         subscribe(startHandler, control);
         subscribe(msgHandler, net);
     }
@@ -37,14 +37,14 @@ public class Client extends ComponentDefinition {
         public void handle(Start start) {
             Msg msg = new Msg(self, member, ++time, Msg.GET_VIEW, null);
             trigger(msg, net);
-            msg.log(logger, "Sent");
+            log.info("Sent", time, msg.toString());
         }
     };
 
     Handler<Msg> msgHandler = new Handler<Msg>() {
         public void handle(Msg msg) {
             time = Math.max(time, msg.time) + 1;
-            msg.log(logger, "Rcvd");
+            log.info("Rcvd", time, msg.toString());
 
             switch (msg.desc) {
                 case Msg.VALUE:
@@ -55,6 +55,7 @@ public class Client extends ComponentDefinition {
                     view = (HashMap<Integer, TAddress>) msg.body;
                     Msg getMsg = new Msg(self, view.get(1), ++time, Msg.GET, "wontfind");
                     trigger(getMsg, net);
+                    log.info("Sent", time, getMsg.toString());
                     break;
             }
         }

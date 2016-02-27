@@ -47,14 +47,8 @@ public class Msg extends TMessage {
         }
     }
 
-    public void log(Logger logger, String event) {
-        switch (event) {
-            case "Sent":
-                logger.info("Sent({}) to {}:\t{}, {}", time, header.dst, descString(), body);
-                break;
-            case "Rcvd":
-                logger.info("Rcvd({}) fr {}:\t{}, {}", time, header.src, descString(), body);
-                break;
-        }
+    @Override
+    public String toString() {
+        return "{" + getSource() + ", " + getDestination() + ", " + time  + ", " + descString() + ", " + body + "}";
     }
 }
