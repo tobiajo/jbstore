@@ -16,6 +16,7 @@ public class KVStore extends ComponentDefinition {
     Negative<KVStorePort> kvn = provides(KVStorePort.class);
 
     public KVStore() {
+        subscribe(initHandler, kvn);
         subscribe(getHandler, kvn);
         subscribe(putHandler, kvn);
     }
@@ -42,6 +43,12 @@ public class KVStore extends ComponentDefinition {
     public static long hashString(String key){
         return Hashing.murmur3_128().hashBytes(key.getBytes()).asLong();
     }
+
+    Handler<KVStorePort.Init> initHandler = new Handler<KVStorePort.Init>(){
+        public void handle(KVStorePort.Init init) {
+            System.out.println("Init");
+        }
+    };
 
     Handler<KVStorePort.Read> getHandler = new Handler<KVStorePort.Read>(){
         public void handle(KVStorePort.Read read) {

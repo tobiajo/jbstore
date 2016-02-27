@@ -5,12 +5,23 @@ import se.sics.kompics.PortType;
 import se.sics.test.TAddress;
 
 import java.io.Serializable;
+import java.util.HashMap;
 
 public class KVStorePort extends PortType {
     {
+        request(Init.class);
         request(Read.class);
         request(Write.class);
         indication(Value.class);
+    }
+
+    public static class Init implements KompicsEvent {
+
+        public final HashMap<Integer, TAddress> view;
+
+        public Init(HashMap<Integer, TAddress> view) {
+            this.view = view;
+        }
     }
 
     public static class Read implements KompicsEvent {

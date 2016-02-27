@@ -82,6 +82,7 @@ public class Node extends ComponentDefinition {
                     break;
                 case Msg.VIEW:
                     view = (HashMap<Integer, TAddress>) msg.body;
+                    trigger(new KVStorePort.Init(view), kvp);
                     break;
                 case Msg.GET_VIEW:
                     response = new Msg(self, msg.getSource(), ++time, Msg.VIEW, view);
