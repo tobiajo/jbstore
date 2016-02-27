@@ -1,7 +1,5 @@
 package se.kth.id2203.jbstore.system;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import se.kth.id2203.jbstore.system.network.Msg;
 import se.sics.kompics.ComponentDefinition;
 import se.sics.kompics.Handler;

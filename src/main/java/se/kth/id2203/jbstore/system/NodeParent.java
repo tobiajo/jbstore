@@ -1,8 +1,11 @@
 package se.kth.id2203.jbstore.system;
 
+import se.kth.id2203.jbstore.system.application.KVStore;
+import se.kth.id2203.jbstore.system.application.KVStorePort;
 import se.sics.kompics.Channel;
 import se.sics.kompics.Component;
 import se.sics.kompics.ComponentDefinition;
+import se.sics.kompics.Init;
 import se.sics.kompics.network.Network;
 import se.sics.kompics.timer.Timer;
 import se.sics.test.TAddress;
@@ -17,6 +20,8 @@ public class NodeParent extends ComponentDefinition {
         node = create(Node.class, new Node.Init(init.self, init.member, init.id, init.n));
         netCh = connect(node.getNegative(Network.class), requires(Network.class), Channel.TWO_WAY);
         tmrCh = connect(node.getNegative(Timer.class), requires(Timer.class), Channel.TWO_WAY);
+        Component kvStore = create(KVStore.class, se.sics.kompics.Init.NONE);
+        connect(node.getNegative(KVStorePort.class), kvStore.getPositive(KVStorePort.class), Channel.TWO_WAY);
     }
 
     public static class Init extends se.sics.kompics.Init<NodeParent> {

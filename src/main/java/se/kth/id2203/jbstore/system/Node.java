@@ -1,8 +1,7 @@
 package se.kth.id2203.jbstore.system;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import se.kth.id2203.jbstore.system.application.KVStore;
+import se.kth.id2203.jbstore.system.application.KVStorePort;
 import se.kth.id2203.jbstore.system.network.Msg;
 import se.sics.kompics.ComponentDefinition;
 import se.sics.kompics.Handler;
@@ -12,7 +11,6 @@ import se.sics.kompics.network.Network;
 import se.sics.kompics.timer.Timer;
 import se.sics.test.TAddress;
 
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,6 +19,7 @@ public class Node extends ComponentDefinition {
     private final Log log;
     private final Positive<Network> net = requires(Network.class);
     private final Positive<Timer> timer = requires(Timer.class);
+    Positive<KVStorePort> kvp = requires(KVStorePort.class);
     private final KVStore store = new KVStore();
     private final TAddress self;
     private final TAddress member;
@@ -29,17 +28,16 @@ public class Node extends ComponentDefinition {
     private HashMap<Integer, TAddress> view;
 
     private long time = 0;
-    private int seen = 0;
-
 
     public Node(Init init) {
+        subscribe(startHandler, control);
+        subscribe(msgHandler, net);
+        subscribe(valueHandler, kvp);
         this.self = init.self;
         this.member = init.member;
         this.id = init.id;
         this.n = init.n;
         log = new Log("Node" + id);
-        subscribe(startHandler, control);
-        subscribe(msgHandler, net);
     }
 
     Handler<Start> startHandler = new Handler<Start>() {
@@ -58,6 +56,7 @@ public class Node extends ComponentDefinition {
 
         }
     };
+
     Handler<Msg> msgHandler = new Handler<Msg>() {
         public void handle(Msg msg) {
             Msg response;
@@ -66,25 +65,14 @@ public class Node extends ComponentDefinition {
 
             switch (msg.desc) {
                 case Msg.GET:
-                    String getKey = (String) msg.body;
-                    Serializable value = store.get(getKey);
-                    response = new Msg(self, msg.getSource(), ++time, Msg.VALUE, value);
-                    trigger(response, net);
-                    log.info("Sent", time, response.toString());
+                    trigger(new KVStorePort.Read((String) msg.body, msg.getSource()), kvp);
                     break;
                 case Msg.PUT:
-                    Serializable[] keyValue = (Serializable[]) msg.body;
-                    String putKey = (String) keyValue[0];
-                    store.put(putKey, keyValue[1]);
-                    break;
-                case Msg.VALUE:
-                    //TODO
+                    trigger(new KVStorePort.Write((String) msg.body, msg.getSource(), msg.body), kvp);
                     break;
                 case Msg.JOIN:
-                    seen++;
                     view.put((Integer) msg.body, msg.getSource());
-                    //view[seen] = msg.getSource();
-                    if (seen == n - 1) {
+                    if (view.size() == n) {
                         for (Map.Entry<Integer, TAddress> entry : view.entrySet()) {
                             response = new Msg(self, entry.getValue(), time, Msg.VIEW, view);
                             trigger(response, net);
@@ -101,6 +89,14 @@ public class Node extends ComponentDefinition {
                     log.info("Sent", time, response.toString());
                     break;
             }
+        }
+    };
+
+    Handler<KVStorePort.Value> valueHandler = new Handler<KVStorePort.Value>(){
+        public void handle(KVStorePort.Value value) {
+            Msg response = new Msg(self, value.src, ++time, Msg.VALUE, value.value);
+            trigger(response, net);
+            log.info("Sent", time, response.toString());
         }
     };
 
