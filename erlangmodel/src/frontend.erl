@@ -13,7 +13,7 @@
 -export([start/0, put/3, get/2]).
 
 start() ->
-  spawn(fun() -> loop([], 0) end).
+  spawn(fun() -> loop([], 0, 0) end).
 
 put(Key, Value, FE) ->
   FE ! {put, Key, Value, self()},
@@ -28,31 +28,31 @@ get(Key, FE) ->
     {value, Key, Value} -> {Key, Value}
   end.
 
-loop(View, Seq) ->
+loop(View, Seq, Rid) ->
   io:format("FE - loop: Seq: ~b~n", [Seq]),
   receive
     {join, Worker} ->
-      loop([Worker|View], Seq);
+      loop([Worker|View], Seq, Rid);
     {put, Key, Value, Src} ->
       NewSeq = Seq + 1,
-      awrite(View, Key, Value, NewSeq),
+      awrite(View, Key, Value, NewSeq, Rid),
       Src ! ok,
-      loop(View, NewSeq);
+      loop(View, NewSeq, Rid + 1);
     {get, Key, Src} ->
-      case aread(View, Key) of
+      case aread(View, Key, Rid) of
        false -> Src ! notfound,
-       loop(View, Seq);
+       loop(View, Seq, Rid + 1);
        {Key, {NewSeq, Value}} ->
-         awrite(View, Key, Value, NewSeq + 1),
+         awrite(View, Key, Value, NewSeq + 1, Rid + 1),
          Src ! {value, Key, Value},
-         loop(View, NewSeq + 1)
+         loop(View, NewSeq + 1, Rid + 1)
       end
   end.
 
-aread(View, Key) ->
-  lists:foreach(fun(Worker) -> Worker ! {aread, Key} end, View),
+aread(View, Key, Rid) ->
+  lists:foreach(fun(Worker) -> Worker ! {aread, Key, Rid} end, View),
 
-  Responses = waitread(erlang:length(View), []),
+  Responses = waitread((erlang:length(View) div 2) + 1, [], Rid),
   case Responses of
     [] -> false;
     List -> List1 = removeFalses(List),
@@ -83,23 +83,27 @@ getNewest(Responses) ->
                                                        end end,
     {dummy, {0, dummy}}, Responses).
 %return list of received aread values
-waitread(0, Responses) ->
+waitread(0, Responses, _) ->
   Responses;
-waitread(WaitingFor, Responses) ->
+waitread(WaitingFor, Responses, Rid) ->
   receive
-    {value, V} -> waitread(WaitingFor - 1, [V|Responses])
+    {value, V, Rid} -> waitread(WaitingFor - 1, [V|Responses], Rid);
+    %Throwaway unexpected messages
+    _ -> waitread(WaitingFor, Responses, Rid)
   end.
 
 
-awrite(View, Key, Value, Seq) ->
-  lists:foreach(fun(Worker) -> Worker ! {awrite, Key, Value, Seq} end, View),
-  waitack(erlang:length(View)).
+awrite(View, Key, Value, Seq, Rid) ->
+  lists:foreach(fun(Worker) -> Worker ! {awrite, Key, Value, Seq, Rid} end, View),
+  waitack((erlang:length(View) div 2) + 1, Rid).
 
-waitack(0) ->
+waitack(0, _) ->
   ok;
 
-waitack(WaitingFor) ->
+waitack(WaitingFor, Rid) ->
   receive
-    ack -> waitack(WaitingFor - 1)
+    {Rid, ack} -> waitack(WaitingFor - 1, Rid);
+    %Throwaway unexpected messages
+    _ -> waitack(WaitingFor, Rid)
   end.
 

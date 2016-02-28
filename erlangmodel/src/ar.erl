@@ -22,8 +22,8 @@ init(Id, FrontEnd) ->
 join(FrontEnd) ->
   FrontEnd ! {join, self()}.
 
-ack(FrontEnd) ->
-  FrontEnd ! ack.
+ack(Rid, FrontEnd) ->
+  FrontEnd ! {Rid, ack}.
 % Id of register
 %
 loop(Id, Store, FrontEnd) ->
@@ -31,8 +31,8 @@ loop(Id, Store, FrontEnd) ->
   receive
 
   % atomic write
-    {awrite, Key, Value, NewSeq} ->
-      io:format("AR - awrite: NewSeq = ~b~n", [NewSeq]),
+    {awrite, Key, Value, NewSeq, Rid} ->
+      io:format("(AR~b) awrite received: NewSeq = ~b Rid = ~b~n", [Id, NewSeq, Rid]),
       Old = storage:lookup(Key, Store),
       case Old of
         false -> NewStore = storage:add(Key, {NewSeq, Value}, Store);
@@ -41,12 +41,12 @@ loop(Id, Store, FrontEnd) ->
                               true -> NewStore = Store
                             end
       end,
-      ack(FrontEnd),
+      ack(Rid, FrontEnd),
       loop(Id, NewStore, FrontEnd);
 
   % atomic read
-    {aread, Key} ->
-      FrontEnd ! {value, storage:lookup(Key, Store)},
+    {aread, Key, Rid} ->
+      FrontEnd ! {value, storage:lookup(Key, Store), Rid},
       loop(Id, Store, FrontEnd);
 
   % debug get
