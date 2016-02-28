@@ -6,8 +6,6 @@ import se.sics.test.TMessage;
 
 import java.io.Serializable;
 
-import org.slf4j.Logger;
-
 public class Msg extends TMessage {
 
     public static final byte JOIN = 0;
@@ -16,6 +14,8 @@ public class Msg extends TMessage {
     public static final byte PUT = 3;
     public static final byte VALUE = 4;
     public static final byte GET_VIEW = 5;
+
+    public static final byte KV_STORE = 99;
 
     public final long time;
     public final byte desc;

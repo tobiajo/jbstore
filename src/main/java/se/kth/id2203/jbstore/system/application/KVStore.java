@@ -4,39 +4,42 @@ import java.io.Serializable;
 import java.util.HashMap;
 
 import com.google.common.hash.Hashing;
+import se.kth.id2203.jbstore.system.application.event.*;
 import se.sics.kompics.ComponentDefinition;
 import se.sics.kompics.Handler;
-import se.sics.kompics.Negative;
+import se.sics.kompics.Positive;
 
 public class KVStore extends ComponentDefinition {
 
-    private HashMap<String, SequenceValueTuple> store = new HashMap<>();
-    Negative<KVStorePort> kvn = provides(KVStorePort.class);
+    private Positive<KVStorePort> node = requires(KVStorePort.class);
 
+    private HashMap<String, SequenceValueTuple> store = new HashMap<>();
     long sequence = 0;
     long rid = 0;
 
     public KVStore() {
-        subscribe(initHandler, kvn);
-        subscribe(readHandler, kvn);
-        subscribe(writeHandler, kvn);
-
+        subscribe(initHandler, node);
+        subscribe(readHandler, node);
+        subscribe(writeHandler, node);
     }
 
-    Handler<KVStorePort.Init> initHandler = new Handler<KVStorePort.Init>(){
-        public void handle(KVStorePort.Init init) {
-            System.out.println("Init");
+    Handler<KVStoreInit> initHandler = new Handler<KVStoreInit>(){
+        @Override
+        public void handle(KVStoreInit event) {
+            System.out.println("===>" + event.view);
         }
     };
 
-    Handler<KVStorePort.Read> readHandler = new Handler<KVStorePort.Read>(){
-        public void handle(KVStorePort.Read read) {
-            trigger(new KVStorePort.Value(read.src, store.get(read.key)), kvn);
+    Handler<KVStoreRead> readHandler = new Handler<KVStoreRead>(){
+        @Override
+        public void handle(KVStoreRead read) {
+            trigger(new KVStoreValue(read.src, store.get(read.key)), node);
         }
     };
 
-    Handler<KVStorePort.Write> writeHandler = new Handler<KVStorePort.Write>(){
-        public void handle(KVStorePort.Write write) {
+    Handler<KVStoreWrite> writeHandler = new Handler<KVStoreWrite>(){
+        @Override
+        public void handle(KVStoreWrite write) {
             SequenceValueTuple toWrite = (SequenceValueTuple) write.value;
             long oldSeq = store.get(write.key).sequence;
 
@@ -44,7 +47,7 @@ public class KVStore extends ComponentDefinition {
                 store.put(write.key, toWrite);
             }
 
-            trigger(new KVStorePort.Ack(rid), kvn);
+            trigger(new KVStoreAck(rid), node);
 
         }
     };
