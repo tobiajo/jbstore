@@ -124,11 +124,11 @@ public class KVStore extends ComponentDefinition {
         }
 
         void value(NetMsg netMsg) {
-            Triple<Integer, Integer, Serializable> rTsV = (Triple<Integer, Integer, Serializable>) netMsg.body;
-            int r = rTsV.getLeft();
-            int tsPrim = rTsV.getMiddle();
-            Serializable vPrim = rTsV.getRight();
-            readlist.get(r).put(netMsg.getSource(), Pair.of(tsPrim, vPrim));
+            Triple<Integer, Integer, Serializable> rTsprimeVprime = (Triple<Integer, Integer, Serializable>) netMsg.body;
+            int r = rTsprimeVprime.getLeft();
+            int tsprime = rTsprimeVprime.getMiddle();
+            Serializable vprime = rTsprimeVprime.getRight();
+            readlist.get(r).put(netMsg.getSource(), Pair.of(tsprime, vprime));
             if (readlist.get(r).size() > replicationGroup.size() / 2) {
                 Pair<Integer, Serializable> maxtsReadval = highest(r);
                 readlist.get(r).clear();
@@ -157,13 +157,13 @@ public class KVStore extends ComponentDefinition {
         }
 
         void write(NetMsg netMsg) {
-            Triple<Integer, Integer, Serializable> rTsV = (Triple<Integer, Integer, Serializable>) netMsg.body;
-            int r = rTsV.getLeft();
-            int tsPrim = rTsV.getMiddle();
-            Serializable vPrim = rTsV.getRight();
-            if (tsPrim > ts) {
-                ts = tsPrim;
-                val = vPrim;
+            Triple<Integer, Integer, Serializable> rTsprimeVprime = (Triple<Integer, Integer, Serializable>) netMsg.body;
+            int r = rTsprimeVprime.getLeft();
+            int tsprime = rTsprimeVprime.getMiddle();
+            Serializable vprime = rTsprimeVprime.getRight();
+            if (tsprime > ts) {
+                ts = tsprime;
+                val = vprime;
             }
             send(netMsg.getSource(), NetMsg.ACK, r);
         }
