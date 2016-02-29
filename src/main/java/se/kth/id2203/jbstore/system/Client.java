@@ -41,6 +41,7 @@ public class Client extends ComponentDefinition {
     private String testString = "Great success";
 
     private Handler<NetMsg> msgHandler = new Handler<NetMsg>() {
+        @Override
         public void handle(NetMsg netMsg) {
             log.info("Rcvd", -1, netMsg.toString());
             switch (netMsg.cmd) {
