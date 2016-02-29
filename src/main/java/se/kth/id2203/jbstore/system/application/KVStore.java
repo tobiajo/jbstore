@@ -128,13 +128,11 @@ public class KVStore extends ComponentDefinition {
             int r = rTsV.getLeft();
             int tsPrim = rTsV.getMiddle();
             Serializable vPrim = rTsV.getRight();
-            if (r == rid) {
-                readlist.get(r).put(netMsg.getSource(), Pair.of(tsPrim, vPrim));
-                if (readlist.get(r).size() > replicationGroup.size() / 2) {
-                    Pair<Integer, Serializable> maxtsReadval = highest(r);
-                    readlist.get(r).clear();
-                    broadcast(NetMsg.WRITE, Triple.of(rid, maxtsReadval.getLeft(), maxtsReadval.getRight()));
-                }
+            readlist.get(r).put(netMsg.getSource(), Pair.of(tsPrim, vPrim));
+            if (readlist.get(r).size() > replicationGroup.size() / 2) {
+                Pair<Integer, Serializable> maxtsReadval = highest(r);
+                readlist.get(r).clear();
+                broadcast(NetMsg.WRITE, Triple.of(rid, maxtsReadval.getLeft(), maxtsReadval.getRight()));
             }
         }
 
