@@ -85,14 +85,14 @@ public class KVStore extends ComponentDefinition {
     private class AtomicRegister {
 
         int ts;
-        Serializable val;
+        Serializable val; // value
         int wts;
         TAddress writer;
 
         int rid;
         HashMap<Integer, Integer> acks;
         HashMap<Integer, HashMap<TAddress, Pair<Integer, Serializable>>> readlist;
-        HashMap<Integer, Long> readval;
+        HashMap<Integer, Long> readval; // key
         HashMap<Integer, Boolean> reading;
         HashMap<Integer, TAddress> reader;
 
