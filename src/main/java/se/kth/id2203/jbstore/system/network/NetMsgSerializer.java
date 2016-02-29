@@ -9,7 +9,7 @@ import se.sics.test.THeader;
 
 import java.io.Serializable;
 
-public class MsgSerializer implements Serializer {
+public class NetMsgSerializer implements Serializer {
 
     @Override
     public int identifier() {
@@ -18,11 +18,12 @@ public class MsgSerializer implements Serializer {
 
     @Override
     public void toBinary(Object o, ByteBuf buf) {
-        Msg msg = (Msg) o;
-        Serializers.toBinary(msg.header, buf);                                      // write THeader
-        buf.writeLong(msg.time);                                                    // write long
-        buf.writeByte(msg.desc);                                                    // write byte
-        byte[] data = SerializationUtils.serialize(msg.body);
+        NetMsg netMsg = (NetMsg) o;
+        Serializers.toBinary(netMsg.header, buf);                                   // write THeader
+        buf.writeLong(netMsg.time);                                                 // write long
+        buf.writeByte(netMsg.comp);                                                 // write byte
+        buf.writeByte(netMsg.cmd);                                                  // write byte
+        byte[] data = SerializationUtils.serialize(netMsg.body);
         buf.writeInt(data.length);                                                  // write int
         buf.writeBytes(data);                                                       // write x * byte
     }
@@ -31,11 +32,12 @@ public class MsgSerializer implements Serializer {
     public Object fromBinary(ByteBuf buf, Optional<Object> hint) {
         THeader header = (THeader) Serializers.fromBinary(buf, Optional.absent());  // read THeader
         long time = buf.readLong();                                                 // read long
-        byte desc = buf.readByte();                                                 // read byte
+        byte comp = buf.readByte();                                                 // read byte
+        byte cmd = buf.readByte();                                                  // read byte
         byte[] data = new byte[buf.readInt()];                                      // read int
         for (int i = 0; i < data.length; i++) {
             data[i] = buf.readByte();                                               // read x * byte
         }
-        return new Msg(header.src, header.dst, time, desc, (Serializable) SerializationUtils.deserialize(data));
+        return new NetMsg(header.src, header.dst, time, comp, cmd, (Serializable) SerializationUtils.deserialize(data));
     }
 }

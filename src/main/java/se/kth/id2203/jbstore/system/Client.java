@@ -1,6 +1,7 @@
 package se.kth.id2203.jbstore.system;
 
-import se.kth.id2203.jbstore.system.network.Msg;
+import se.kth.id2203.jbstore.system.application.KVStore;
+import se.kth.id2203.jbstore.system.network.NetMsg;
 import se.sics.kompics.ComponentDefinition;
 import se.sics.kompics.Handler;
 import se.sics.kompics.Positive;
@@ -14,11 +15,10 @@ import java.util.HashMap;
 public class Client extends ComponentDefinition {
 
     private final Log log;
-    private final Positive<Network> net = requires(Network.class);
-    private final Positive<Timer> timer = requires(Timer.class);
+    private final Positive<Network> networkPositive = requires(Network.class);
+    private final Positive<Timer> timerPositive = requires(Timer.class);
     private final TAddress self;
     private final TAddress member;
-    private long time = 0;
 
     private HashMap<Integer, TAddress> view;
 
@@ -27,34 +27,35 @@ public class Client extends ComponentDefinition {
         this.member = init.member;
         log = new Log("Clnt0");
         subscribe(startHandler, control);
-        subscribe(msgHandler, net);
+        subscribe(msgHandler, networkPositive);
     }
 
     Handler<Start> startHandler = new Handler<Start>() {
         @Override
         public void handle(Start start) {
-            Msg msg = new Msg(self, member, ++time, Msg.GET_VIEW, null);
-            trigger(msg, net);
-            log.info("Sent", time, msg.toString());
+            NetMsg netMsg = new NetMsg(self, member, -1, NetMsg.VIEW_SYNC, NetMsg.GET_VIEW, null);
+            trigger(netMsg, networkPositive);
+            log.info("Sent", -1, netMsg.toString());
         }
     };
 
-    Handler<Msg> msgHandler = new Handler<Msg>() {
-        public void handle(Msg msg) {
-            time = Math.max(time, msg.time) + 1;
-            log.info("Rcvd", time, msg.toString());
+    String string = "Great success";
 
-            switch (msg.desc) {
-                case Msg.VALUE:
-                    //TODO
-                    break;
+    Handler<NetMsg> msgHandler = new Handler<NetMsg>() {
+        public void handle(NetMsg netMsg) {
+            log.info("Rcvd", -1, netMsg.toString());
 
-                case Msg.VIEW:
-                    view = (HashMap<Integer, TAddress>) msg.body;
-                    Msg getMsg = new Msg(self, view.get(1), ++time, Msg.GET, "wontfind");
-                    trigger(getMsg, net);
-                    log.info("Sent", time, getMsg.toString());
+            switch (netMsg.cmd) {
+                case NetMsg.VIEW:
+                    System.out.println("Sends put");
+                    trigger(new NetMsg(self, member, -1, NetMsg.KV_STORE, NetMsg.PUT, string), networkPositive);
                     break;
+                case NetMsg.ACK:
+                    System.out.println("Sends get");
+                    trigger(new NetMsg(self, member, -1, NetMsg.KV_STORE, NetMsg.GET, KVStore.getHash(string)), networkPositive);
+                    break;
+                case NetMsg.VALUE:
+                    System.out.println(netMsg.body + " !!!");
             }
         }
     };

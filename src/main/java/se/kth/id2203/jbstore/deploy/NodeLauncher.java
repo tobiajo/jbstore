@@ -1,7 +1,7 @@
 package se.kth.id2203.jbstore.deploy;
 
-import se.kth.id2203.jbstore.system.network.Msg;
-import se.kth.id2203.jbstore.system.network.MsgSerializer;
+import se.kth.id2203.jbstore.system.network.NetMsg;
+import se.kth.id2203.jbstore.system.network.NetMsgSerializer;
 import se.sics.kompics.Kompics;
 import se.sics.kompics.network.netty.serialization.Serializers;
 import se.sics.test.*;
@@ -14,11 +14,11 @@ public class NodeLauncher {
     static {
         // register
         Serializers.register(new NetSerializer(), "netS");
-        Serializers.register(new MsgSerializer(), "msgS");
+        Serializers.register(new NetMsgSerializer(), "msgS");
         // map
         Serializers.register(TAddress.class, "netS");
         Serializers.register(THeader.class, "netS");
-        Serializers.register(Msg.class, "msgS");
+        Serializers.register(NetMsg.class, "msgS");
     }
 
     public static void main(String[] args) {

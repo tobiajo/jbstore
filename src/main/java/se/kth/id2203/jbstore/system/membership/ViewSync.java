@@ -1,82 +1,87 @@
 package se.kth.id2203.jbstore.system.membership;
 
-import se.kth.id2203.jbstore.system.application.KVStoreMsg;
 import se.kth.id2203.jbstore.system.application.KVStorePort;
 import se.kth.id2203.jbstore.system.application.event.KVStoreInit;
 import se.kth.id2203.jbstore.system.membership.event.*;
-import se.kth.id2203.jbstore.system.network.Msg;
+import se.kth.id2203.jbstore.system.network.NetMsg;
 import se.sics.kompics.ComponentDefinition;
 import se.sics.kompics.Handler;
 import se.sics.kompics.Negative;
 import se.sics.kompics.Positive;
 import se.sics.test.TAddress;
 
+import java.io.Serializable;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 public class ViewSync extends ComponentDefinition {
 
-    private Negative<KVStorePort> kVStore = provides(KVStorePort.class);
-    private Positive<ViewSyncPort> node = requires(ViewSyncPort.class);
-    private HashMap<Integer, TAddress> view = new HashMap<>();
-    private int n = 5;
+    private final Negative<KVStorePort> kvStorePortNegative = provides(KVStorePort.class);
+    private final Positive<ViewSyncPort> viewSyncPortPositive = requires(ViewSyncPort.class);
+
+    private TAddress self;
+    private TAddress member;
+    private int id;
+    private int n;
+    private HashMap<Integer, TAddress> view;
 
     public ViewSync() {
-        //subscribe(kVStoreMsgHandler, kVStore);
-        subscribe(deliverHandler, node);
-        subscribe(getViewHandler, node);
-        subscribe(initHandler, node);
-        subscribe(joinHandler, node);
-        subscribe(viewHandler, node);
+        subscribe(netMsgHandler, viewSyncPortPositive);
+        subscribe(viewSyncInitHandler, viewSyncPortPositive);
     }
 
-    Handler<KVStoreMsg> kVStoreMsgHandler = new Handler<KVStoreMsg>(){
+    Handler<ViewSyncInit> viewSyncInitHandler = new Handler<ViewSyncInit>() {
         @Override
-        public void handle(KVStoreMsg event) {
-            trigger(new ViewSyncSend(view.get(event.dst), Msg.KV_STORE, null), node);
-        }
-    };
-
-    Handler<ViewSyncDeliver> deliverHandler = new Handler<ViewSyncDeliver>(){
-        @Override
-        public void handle(ViewSyncDeliver event) {
-            //trigger((KVStoreMsg) event.msgBody, kVStore);
-        }
-    };
-
-    Handler<ViewSyncGetView> getViewHandler = new Handler<ViewSyncGetView>(){
-        @Override
-        public void handle(ViewSyncGetView event) {
-            trigger(new ViewSyncSend(event.src, Msg.VIEW, view), node);
-        }
-    };
-
-
-    Handler<ViewSyncInit> initHandler = new Handler<ViewSyncInit>(){
-        @Override
-        public void handle(ViewSyncInit event) {
-            n = event.n;
-        }
-    };
-
-    Handler<ViewSyncJoin> joinHandler = new Handler<ViewSyncJoin>(){
-        @Override
-        public void handle(ViewSyncJoin event) {
-            view.put(event.id, event.src);
-            if (view.size() == n) {
-                System.out.println("Recived all join");
-                for (Map.Entry<Integer, TAddress> entry : view.entrySet()) {
-                    trigger(new ViewSyncSend(entry.getValue(), Msg.VIEW, view), node);
-                }
+        public void handle(ViewSyncInit viewSyncInit) {
+            self = viewSyncInit.self;
+            member = viewSyncInit.member;
+            id = viewSyncInit.id;
+            n = viewSyncInit.n;
+            view = new HashMap<>();
+            if (member == null) {
+                // Creator node
+                view.put(id, self);
+            } else {
+                // Joiner node
+                send(member, NetMsg.JOIN, id);
             }
         }
     };
 
-    Handler<ViewSyncView> viewHandler = new Handler<ViewSyncView>(){
+    Handler<NetMsg> netMsgHandler = new Handler<NetMsg>() {
         @Override
-        public void handle(ViewSyncView event) {
-            view = event.view;
-            trigger(new KVStoreInit(view.keySet()), kVStore);
+        public void handle(NetMsg netMsg) {
+            switch (netMsg.cmd) {
+                case NetMsg.JOIN:
+                    view.put((Integer) netMsg.body, netMsg.getSource());
+                    if (view.size() == n) {
+                        broadcast(NetMsg.VIEW, view);
+                    }
+                    break;
+                case NetMsg.VIEW:
+                    view = (HashMap<Integer, TAddress>) netMsg.body;
+                    HashSet<TAddress> nodes = new HashSet<>();
+                    for (Map.Entry<Integer, TAddress> entry : view.entrySet()) {
+                        nodes.add(entry.getValue());
+                    }
+                    trigger(new KVStoreInit(self, nodes), kvStorePortNegative);
+                    break;
+                case NetMsg.GET_VIEW:
+                    send(netMsg.getSource(), NetMsg.VIEW, view);
+                    break;
+            }
         }
     };
+
+    private void send(TAddress dst, byte cmd, Serializable body) {
+        NetMsg viewSyncMsg = new NetMsg(self, dst, -1, NetMsg.VIEW_SYNC, cmd, body);
+        trigger(viewSyncMsg, viewSyncPortPositive);
+    }
+
+    private void broadcast(byte cmd, Serializable body) {
+        for (Integer key : view.keySet()) {
+            send(view.get(key), cmd, body);
+        }
+    }
 }

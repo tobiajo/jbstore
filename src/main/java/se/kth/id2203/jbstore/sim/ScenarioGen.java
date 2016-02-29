@@ -19,7 +19,7 @@ public class ScenarioGen {
 
     public static final String IP_NET = "240.0.0.";
     public static final int PORT = 0;
-    public static final int NODES = 5;
+    public static final int NODES = 3;
 
     static Operation1 startCreatorOp = new Operation1<StartNodeEvent, Integer>() {
 
@@ -155,7 +155,7 @@ public class ScenarioGen {
                 StochasticProcess joiner = new StochasticProcess() {
                     {
                         eventInterArrivalTime(constant(1000));
-                        for (int i = 0; i < 4; i++) {
+                        for (int i = 0; i < NODES - 1; i++) {
                             raise(1, startJoinerOp, joinerIp, creatorIp);
                         }
                     }
