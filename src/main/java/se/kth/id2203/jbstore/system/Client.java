@@ -10,6 +10,7 @@ import se.sics.kompics.network.Network;
 import se.sics.kompics.timer.Timer;
 import se.sics.test.TAddress;
 
+import java.io.Serializable;
 import java.util.HashMap;
 
 public class Client extends ComponentDefinition {
@@ -33,26 +34,23 @@ public class Client extends ComponentDefinition {
     Handler<Start> startHandler = new Handler<Start>() {
         @Override
         public void handle(Start start) {
-            NetMsg netMsg = new NetMsg(self, member, -1, NetMsg.VIEW_SYNC, NetMsg.GET_VIEW, null);
-            trigger(netMsg, networkPositive);
-            log.info("Sent", -1, netMsg.toString());
+            send(member, NetMsg.VIEW_SYNC, NetMsg.GET_VIEW, null);
         }
     };
 
-    String string = "Great success";
+    private String testString = "Great success";
 
     Handler<NetMsg> msgHandler = new Handler<NetMsg>() {
         public void handle(NetMsg netMsg) {
             log.info("Rcvd", -1, netMsg.toString());
-
             switch (netMsg.cmd) {
                 case NetMsg.VIEW:
                     System.out.println("Sends put");
-                    trigger(new NetMsg(self, member, -1, NetMsg.KV_STORE, NetMsg.PUT, string), networkPositive);
+                    send(member, NetMsg.KV_STORE, NetMsg.PUT, testString);
                     break;
                 case NetMsg.ACK:
                     System.out.println("Sends get");
-                    trigger(new NetMsg(self, member, -1, NetMsg.KV_STORE, NetMsg.GET, KVStore.getHash(string)), networkPositive);
+                    send(member, NetMsg.KV_STORE, NetMsg.GET, KVStore.getHash(testString));
                     break;
                 case NetMsg.VALUE:
                     System.out.println(netMsg.body + " !!!");
@@ -60,6 +58,11 @@ public class Client extends ComponentDefinition {
         }
     };
 
+    private void send(TAddress dst, byte comp, byte cmd, Serializable body) {
+        NetMsg netMsg = new NetMsg(self, dst, -1, comp, cmd, body);
+        trigger(netMsg, networkPositive);
+        log.info("Sent", -1, netMsg.toString());
+    }
 
     public static class Init extends se.sics.kompics.Init<Client> {
 

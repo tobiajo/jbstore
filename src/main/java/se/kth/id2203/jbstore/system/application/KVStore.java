@@ -65,37 +65,36 @@ public class KVStore extends ComponentDefinition {
         }
     };
 
-    TAddress writer;
-    TAddress reader;
+    private TAddress writer;
+    private int ts;
+    private Serializable val;
+    private int wts;
 
-    int ts;
-    Serializable val;
-    int wts;
-    int acks;
-    int rid;
-    HashMap<TAddress, Pair<Integer, Serializable>> readlist;
-    Serializable readval;
-    Serializable writeval;
-    boolean reading;
+    private TAddress reader;
+    private int rid;
+    private HashMap<Integer, Integer> acks;
+    private HashMap<Integer, HashMap<TAddress, Pair<Integer, Serializable>>> readlist;
+    private HashMap<Integer, Long> readval;
+    private HashMap<Integer, Boolean> reading;
 
     private void init() {
         ts = 0;
         val = null;
         wts = 0;
-        acks = 0;
         rid = 0;
+        acks = new HashMap<>();
         readlist = new HashMap<>();
-        readval = null;
-        reading = false;
+        readval = new HashMap<>();
+        reading = new HashMap<>();
     }
 
     private void get(NetMsg netMsg) {
         reader = netMsg.getSource();
         rid = rid + 1;
-        acks = 0;
-        readlist = new HashMap<>();
-        readval = netMsg.body;
-        reading = true;
+        acks.put(rid, 0);
+        readlist.put(rid, new HashMap<>());
+        readval.put(rid, (Long) netMsg.body);
+        reading.put(rid, true);
         broadcast(NetMsg.READ, rid);
     }
 
@@ -110,18 +109,18 @@ public class KVStore extends ComponentDefinition {
         int tsPrim = rTsV.getMiddle();
         Serializable vPrim = rTsV.getRight();
         if (r == rid) {
-            readlist.put(netMsg.getSource(), Pair.of(tsPrim, vPrim));
-            if (readlist.size() > replicationGroup.size() / 2) {
-                Pair<Integer, Serializable> maxtsReadval = highest();
-                readlist = new HashMap<>();
+            readlist.get(r).put(netMsg.getSource(), Pair.of(tsPrim, vPrim));
+            if (readlist.get(r).size() > replicationGroup.size() / 2) {
+                Pair<Integer, Serializable> maxtsReadval = highest(r);
+                readlist.get(r).clear();
                 broadcast(NetMsg.WRITE, Triple.of(rid, maxtsReadval.getLeft(), maxtsReadval.getRight()));
             }
         }
     }
 
-    private Pair<Integer, Serializable> highest() {
+    private Pair<Integer, Serializable> highest(int r) {
         Pair<Integer, Serializable> maxtsReadval = Pair.of(-1, null);
-        for (Map.Entry<TAddress, Pair<Integer, Serializable>> entry : readlist.entrySet()) {
+        for (Map.Entry<TAddress, Pair<Integer, Serializable>> entry : readlist.get(r).entrySet()) {
             Pair<Integer, Serializable> tsReadval = entry.getValue();
             if (entry.getValue().getLeft() > maxtsReadval.getLeft()) {
                 maxtsReadval = tsReadval;
@@ -135,7 +134,7 @@ public class KVStore extends ComponentDefinition {
         Serializable v = netMsg.body;
         rid = rid + 1;
         wts = wts + 1;
-        acks = 0;
+        acks.put(rid, 0);
         broadcast(NetMsg.WRITE, Triple.of(rid, wts, v));
     }
 
@@ -153,20 +152,18 @@ public class KVStore extends ComponentDefinition {
 
     private void ack(NetMsg netMsg) {
         int r = (int) netMsg.body;
-        if (r == rid) {
-            acks = acks + 1;
-            if (acks > replicationGroup.size() / 2) {
-                acks = 0;
-                if (reading == true) {
-                    reading = false;
-                    send(reader, NetMsg.VALUE, kvStore.get(readval));
-                    System.out.println("Read return");
-                } else {
-                    long hash = getHash(val);
-                    kvStore.put(hash, val);
-                    send(writer, NetMsg.ACK, hash);
-                    System.out.println("Write return");
-                }
+        acks.put(r, acks.get(r) + 1);
+        if (acks.get(r) > replicationGroup.size() / 2) {
+            acks.put(r, 0);
+            if (reading.get(r) == Boolean.TRUE) {
+                reading.put(r, false);
+                send(reader, NetMsg.VALUE, kvStore.get(readval.get(r)));
+                System.out.println("Read return");
+            } else {
+                long hash = getHash(val);
+                kvStore.put(hash, val);
+                send(writer, NetMsg.ACK, hash);
+                System.out.println("Write return");
             }
         }
     }
