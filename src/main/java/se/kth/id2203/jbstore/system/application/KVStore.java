@@ -29,7 +29,11 @@ public class KVStore extends ComponentDefinition {
         subscribe(netMsgHandler, kvStorePortPositive);
     }
 
-    Handler<KVStoreInit> kvStoreInitHandler = new Handler<KVStoreInit>() {
+    public static long getKey(Serializable value) {
+        return Hashing.murmur3_128().hashBytes(SerializationUtils.serialize(value)).asLong();
+    }
+
+    private Handler<KVStoreInit> kvStoreInitHandler = new Handler<KVStoreInit>() {
         @Override
         public void handle(KVStoreInit kvStoreInit) {
             self = kvStoreInit.self;
@@ -39,7 +43,7 @@ public class KVStore extends ComponentDefinition {
         }
     };
 
-    Handler<NetMsg> netMsgHandler = new Handler<NetMsg>() {
+    private Handler<NetMsg> netMsgHandler = new Handler<NetMsg>() {
         @Override
         public void handle(NetMsg netMsg) {
             switch (netMsg.cmd) {
@@ -161,7 +165,7 @@ public class KVStore extends ComponentDefinition {
                 send(reader.get(r), NetMsg.VALUE, kvStore.get(readval.get(r)));
                 System.out.println("Read return");
             } else {
-                long hash = getHash(val);
+                long hash = getKey(val);
                 kvStore.put(hash, val);
                 send(writer, NetMsg.ACK, hash);
                 System.out.println("Write return");
@@ -178,9 +182,5 @@ public class KVStore extends ComponentDefinition {
         for (TAddress node : replicationGroup) {
             send(node, cmd, body);
         }
-    }
-
-    public static long getHash(Serializable value) {
-        return Hashing.murmur3_128().hashBytes(SerializationUtils.serialize(value)).asLong();
     }
 }

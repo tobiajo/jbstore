@@ -31,7 +31,7 @@ public class Client extends ComponentDefinition {
         subscribe(msgHandler, networkPositive);
     }
 
-    Handler<Start> startHandler = new Handler<Start>() {
+    private Handler<Start> startHandler = new Handler<Start>() {
         @Override
         public void handle(Start start) {
             send(member, NetMsg.VIEW_SYNC, NetMsg.GET_VIEW, null);
@@ -40,7 +40,7 @@ public class Client extends ComponentDefinition {
 
     private String testString = "Great success";
 
-    Handler<NetMsg> msgHandler = new Handler<NetMsg>() {
+    private Handler<NetMsg> msgHandler = new Handler<NetMsg>() {
         public void handle(NetMsg netMsg) {
             log.info("Rcvd", -1, netMsg.toString());
             switch (netMsg.cmd) {
@@ -50,7 +50,7 @@ public class Client extends ComponentDefinition {
                     break;
                 case NetMsg.ACK:
                     System.out.println("Sends get");
-                    send(member, NetMsg.KV_STORE, NetMsg.GET, KVStore.getHash(testString));
+                    send(member, NetMsg.KV_STORE, NetMsg.GET, KVStore.getKey(testString));
                     break;
                 case NetMsg.VALUE:
                     System.out.println(netMsg.body + " !!!");

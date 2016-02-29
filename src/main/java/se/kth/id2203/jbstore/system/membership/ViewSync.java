@@ -31,7 +31,7 @@ public class ViewSync extends ComponentDefinition {
         subscribe(viewSyncInitHandler, viewSyncPortPositive);
     }
 
-    Handler<ViewSyncInit> viewSyncInitHandler = new Handler<ViewSyncInit>() {
+    private Handler<ViewSyncInit> viewSyncInitHandler = new Handler<ViewSyncInit>() {
         @Override
         public void handle(ViewSyncInit viewSyncInit) {
             self = viewSyncInit.self;
@@ -49,7 +49,7 @@ public class ViewSync extends ComponentDefinition {
         }
     };
 
-    Handler<NetMsg> netMsgHandler = new Handler<NetMsg>() {
+    private Handler<NetMsg> netMsgHandler = new Handler<NetMsg>() {
         @Override
         public void handle(NetMsg netMsg) {
             switch (netMsg.cmd) {
