@@ -65,17 +65,17 @@ public class KVStore extends ComponentDefinition {
         }
     };
 
-    private TAddress writer;
     private int ts;
     private Serializable val;
     private int wts;
+    private TAddress writer;
 
-    private TAddress reader;
     private int rid;
     private HashMap<Integer, Integer> acks;
     private HashMap<Integer, HashMap<TAddress, Pair<Integer, Serializable>>> readlist;
     private HashMap<Integer, Long> readval;
     private HashMap<Integer, Boolean> reading;
+    private HashMap<Integer, TAddress> reader;
 
     private void init() {
         ts = 0;
@@ -86,15 +86,16 @@ public class KVStore extends ComponentDefinition {
         readlist = new HashMap<>();
         readval = new HashMap<>();
         reading = new HashMap<>();
+        reader = new HashMap<>();
     }
 
     private void get(NetMsg netMsg) {
-        reader = netMsg.getSource();
         rid = rid + 1;
         acks.put(rid, 0);
         readlist.put(rid, new HashMap<>());
         readval.put(rid, (Long) netMsg.body);
         reading.put(rid, true);
+        reader.put(rid, netMsg.getSource());
         broadcast(NetMsg.READ, rid);
     }
 
@@ -130,11 +131,11 @@ public class KVStore extends ComponentDefinition {
     }
 
     private void put(NetMsg netMsg) {
-        writer = netMsg.getSource();
         Serializable v = netMsg.body;
         rid = rid + 1;
         wts = wts + 1;
         acks.put(rid, 0);
+        writer = netMsg.getSource();
         broadcast(NetMsg.WRITE, Triple.of(rid, wts, v));
     }
 
@@ -157,7 +158,7 @@ public class KVStore extends ComponentDefinition {
             acks.put(r, 0);
             if (reading.get(r) == Boolean.TRUE) {
                 reading.put(r, false);
-                send(reader, NetMsg.VALUE, kvStore.get(readval.get(r)));
+                send(reader.get(r), NetMsg.VALUE, kvStore.get(readval.get(r)));
                 System.out.println("Read return");
             } else {
                 long hash = getHash(val);
