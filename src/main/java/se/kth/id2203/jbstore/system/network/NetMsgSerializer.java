@@ -20,7 +20,7 @@ public class NetMsgSerializer implements Serializer {
     public void toBinary(Object o, ByteBuf buf) {
         NetMsg netMsg = (NetMsg) o;
         Serializers.toBinary(netMsg.header, buf);                                   // write THeader
-        buf.writeLong(netMsg.time);                                                 // write long
+        buf.writeLong(netMsg.rid);                                                  // write long
         buf.writeByte(netMsg.comp);                                                 // write byte
         buf.writeByte(netMsg.cmd);                                                  // write byte
         byte[] data = SerializationUtils.serialize(netMsg.body);
@@ -31,13 +31,13 @@ public class NetMsgSerializer implements Serializer {
     @Override
     public Object fromBinary(ByteBuf buf, Optional<Object> hint) {
         THeader header = (THeader) Serializers.fromBinary(buf, Optional.absent());  // read THeader
-        long time = buf.readLong();                                                 // read long
+        long rid   = buf.readLong();                                                // read long
         byte comp = buf.readByte();                                                 // read byte
         byte cmd = buf.readByte();                                                  // read byte
         byte[] data = new byte[buf.readInt()];                                      // read int
         for (int i = 0; i < data.length; i++) {
             data[i] = buf.readByte();                                               // read x * byte
         }
-        return new NetMsg(header.src, header.dst, time, comp, cmd, (Serializable) SerializationUtils.deserialize(data));
+        return new NetMsg(header.src, header.dst, rid, comp, cmd, (Serializable) SerializationUtils.deserialize(data));
     }
 }

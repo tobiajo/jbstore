@@ -44,7 +44,7 @@ public class ViewSync extends ComponentDefinition {
                 view.put(id, self);
             } else {
                 // Joiner node
-                send(member, NetMsg.JOIN, id);
+                send(member, -1, NetMsg.JOIN, id);
             }
         }
     };
@@ -67,21 +67,21 @@ public class ViewSync extends ComponentDefinition {
                     }
                     trigger(new KVStoreInit(self, nodes), kvStorePortNegative);
                     break;
-                case NetMsg.GET_VIEW:
-                    send(netMsg.getSource(), NetMsg.VIEW, view);
+                case NetMsg.VIEW_REQUEST:
+                    send(netMsg.getSource(), netMsg.rid, NetMsg.VIEW, view);
                     break;
             }
         }
     };
 
-    private void send(TAddress dst, byte cmd, Serializable body) {
-        NetMsg viewSyncMsg = new NetMsg(self, dst, -1, NetMsg.VIEW_SYNC, cmd, body);
+    private void send(TAddress dst, long rid, byte cmd, Serializable body) {
+        NetMsg viewSyncMsg = new NetMsg(self, dst, rid, NetMsg.VIEW_SYNC, cmd, body);
         trigger(viewSyncMsg, viewSyncPortPositive);
     }
 
     private void broadcast(byte cmd, Serializable body) {
         for (Integer key : view.keySet()) {
-            send(view.get(key), cmd, body);
+            send(view.get(key), -1, cmd, body);
         }
     }
 }
