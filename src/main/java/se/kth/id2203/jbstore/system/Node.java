@@ -1,5 +1,7 @@
 package se.kth.id2203.jbstore.system;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import se.kth.id2203.jbstore.system.application.KVStorePort;
 import se.kth.id2203.jbstore.system.membership.ViewSyncPort;
 import se.kth.id2203.jbstore.system.membership.event.*;
@@ -11,16 +13,16 @@ import se.sics.test.TAddress;
 
 public class Node extends ComponentDefinition {
 
-    private Negative<KVStorePort> kvStorePortNegative = provides(KVStorePort.class);
-    private Negative<ViewSyncPort> viewSyncPortNegative = provides(ViewSyncPort.class);
-    private Positive<Network> networkPositive = requires(Network.class);
-    private Positive<Timer> timerPositive = requires(Timer.class);
+    private final Negative<KVStorePort> kvStorePortNegative = provides(KVStorePort.class);
+    private final Negative<ViewSyncPort> viewSyncPortNegative = provides(ViewSyncPort.class);
+    private final Positive<Network> networkPositive = requires(Network.class);
+    private final Positive<Timer> timerPositive = requires(Timer.class);
 
-    private TAddress self;
-    private TAddress member;
-    private int id;
-    private int n;
-    private Log log;
+    private final TAddress self;
+    private final TAddress member;
+    private final int id;
+    private final int n;
+    private final Logger log;
 
     public Node(Init init) {
         subscribe(netMsgOutHandler, kvStorePortNegative);
@@ -31,7 +33,7 @@ public class Node extends ComponentDefinition {
         this.member = init.member;
         this.id = init.id;
         this.n = init.n;
-        log = new Log("Node" + id);
+        log = LoggerFactory.getLogger("Node" + id);
     }
 
     Handler<Start> startHandler = new Handler<Start>() {
@@ -44,7 +46,7 @@ public class Node extends ComponentDefinition {
     Handler<NetMsg> netMsgInHandler = new Handler<NetMsg>() {
         @Override
         public void handle(NetMsg netMsg) {
-            log.info("Rcvd", -1, netMsg.toString());
+            log.info("Rcvd: " + netMsg.toString());
             switch (netMsg.comp) {
                 case NetMsg.VIEW_SYNC:
                     trigger(netMsg, viewSyncPortNegative);
@@ -60,7 +62,7 @@ public class Node extends ComponentDefinition {
         @Override
         public void handle(NetMsg netMsg) {
             trigger(netMsg, networkPositive);
-            log.info("Sent", -1, netMsg.toString());
+            log.info("Sent: " + netMsg.toString());
         }
     };
 

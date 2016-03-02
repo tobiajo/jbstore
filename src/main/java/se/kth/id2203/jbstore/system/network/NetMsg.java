@@ -11,24 +11,26 @@ public class NetMsg extends TMessage {
     public static final byte VIEW_SYNC = 0;
     public static final byte JOIN = 1;
     public static final byte VIEW = 2;
-    public static final byte GET_VIEW = 3;
+    public static final byte VIEW_REQUEST = 3;
 
     public static final byte KV_STORE = 10;
     public static final byte GET = 11;
-    public static final byte READ = 12;
-    public static final byte VALUE = 13;
-    public static final byte PUT = 14;
-    public static final byte WRITE = 15;
-    public static final byte ACK = 16;
+    public static final byte PUT = 12;
+    public static final byte GET_RESPONSE = 13;
+    public static final byte PUT_RESPONSE = 14;
+    public static final byte READ = 15;
+    public static final byte VALUE = 16;
+    public static final byte WRITE = 17;
+    public static final byte ACK = 18;
 
-    public final long time;
+    public final long rid;
     public final byte comp;
     public final byte cmd;
     public final Serializable body;
 
-    public NetMsg(TAddress src, TAddress dst, long time, byte comp, byte cmd, Serializable body) {
+    public NetMsg(TAddress src, TAddress dst, long rid, byte comp, byte cmd, Serializable body) {
         super(src, dst, Transport.TCP);
-        this.time = time;
+        this.rid = rid;
         this.comp = comp;
         this.cmd = cmd;
         this.body = body;
@@ -40,16 +42,20 @@ public class NetMsg extends TMessage {
                 return "JOIN";
             case VIEW:
                 return "VIEW";
-            case GET_VIEW:
-                return "GET_VIEW";
+            case VIEW_REQUEST:
+                return "VIEW_REQUEST";
             case GET:
                 return "GET";
+            case PUT:
+                return "PUT";
+            case GET_RESPONSE:
+                return "GET_RESPONSE";
+            case PUT_RESPONSE:
+                return "PUT_RESPONSE";
             case READ:
                 return "READ";
             case VALUE:
                 return "VALUE";
-            case PUT:
-                return "PUT";
             case WRITE:
                 return "WRITE";
             case ACK:
@@ -61,6 +67,6 @@ public class NetMsg extends TMessage {
 
     @Override
     public String toString() {
-        return "{" + getSource() + ", " + getDestination() + ", " + time + ", " + cmdString() + ", " + body + "}";
+        return "{" + getSource() + ", " + getDestination() + ", " + rid + ", " + cmdString() + ", " + body + "}";
     }
 }
