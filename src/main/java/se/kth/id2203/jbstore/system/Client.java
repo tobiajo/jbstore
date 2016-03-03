@@ -38,7 +38,7 @@ public class Client extends ComponentDefinition {
     private Handler<Start> startHandler = new Handler<Start>() {
         @Override
         public void handle(Start start) {
-            request(member, NetMsg.VIEW_SYNC, NetMsg.VIEW_REQUEST, null);
+            //request(member, NetMsg.VIEW_SYNC, NetMsg.VIEW_REQUEST, null);
         }
     };
 

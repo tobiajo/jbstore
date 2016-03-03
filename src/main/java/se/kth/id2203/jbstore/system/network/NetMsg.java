@@ -23,7 +23,10 @@ public class NetMsg extends TMessage {
     public static final byte WRITE = 17;
     public static final byte ACK = 18;
 
-    public static final byte HEART_BEAT = 19;
+    public static final byte EPFD = 20;
+    public static final byte HEARTBEAT = 21;
+    public static final byte HEARTBEAT_ACK = 22;
+
 
     public final long rid;
     public final byte comp;
@@ -62,8 +65,10 @@ public class NetMsg extends TMessage {
                 return "WRITE";
             case ACK:
                 return "ACK";
-            case HEART_BEAT:
-                return "HEART_BEAT";
+            case HEARTBEAT:
+                return "HEARTBEAT";
+            case HEARTBEAT_ACK:
+                return "HEARTBEAT_ACK";
             default:
                 throw new RuntimeException("Unexpected type-byte in NetMsg");
         }

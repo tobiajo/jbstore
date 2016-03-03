@@ -38,10 +38,11 @@ public class KVStore extends ComponentDefinition {
         @Override
         public void handle(KVStoreInit kvStoreInit) {
             self = kvStoreInit.self;
-            replicationGroup = kvStoreInit.nodes;
+            replicationGroup = kvStoreInit.replicationGroup;
             kvStore = new HashMap<>();
             onar = new AtomicRegister(); // Fail-Silent Algorithm: Read-Impose Write-Majority (1, N)
             onar.init();
+            System.out.println(self + ": kvStoreInitHandler called");
         }
     };
 

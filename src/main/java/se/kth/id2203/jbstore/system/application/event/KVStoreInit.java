@@ -8,10 +8,10 @@ import java.util.HashSet;
 public class KVStoreInit implements KompicsEvent {
 
     public final TAddress self;
-    public final HashSet<TAddress> nodes;
+    public final HashSet<TAddress> replicationGroup;
 
-    public KVStoreInit(TAddress self, HashSet<TAddress> nodes) {
+    public KVStoreInit(TAddress self, HashSet<TAddress> replicationGroup) {
         this.self = self;
-        this.nodes = nodes;
+        this.replicationGroup = replicationGroup;
     }
 }

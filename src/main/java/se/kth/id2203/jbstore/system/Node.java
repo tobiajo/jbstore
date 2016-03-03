@@ -16,7 +16,6 @@ public class Node extends ComponentDefinition {
     private final Negative<KVStorePort> kvStorePortNegative = provides(KVStorePort.class);
     private final Negative<ViewSyncPort> viewSyncPortNegative = provides(ViewSyncPort.class);
     private final Positive<Network> networkPositive = requires(Network.class);
-    private final Positive<Timer> timerPositive = requires(Timer.class);
 
     private final TAddress self;
     private final TAddress member;

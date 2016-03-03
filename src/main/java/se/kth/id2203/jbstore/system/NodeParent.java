@@ -2,6 +2,8 @@ package se.kth.id2203.jbstore.system;
 
 import se.kth.id2203.jbstore.system.application.KVStore;
 import se.kth.id2203.jbstore.system.application.KVStorePort;
+import se.kth.id2203.jbstore.system.failuredetector.EPFD;
+import se.kth.id2203.jbstore.system.failuredetector.EPFDPort;
 import se.kth.id2203.jbstore.system.membership.ViewSync;
 import se.kth.id2203.jbstore.system.membership.ViewSyncPort;
 import se.sics.kompics.Channel;
@@ -20,14 +22,19 @@ public class NodeParent extends ComponentDefinition {
     public NodeParent(Init init) {
         node = create(Node.class, new Node.Init(init.self, init.member, init.id, init.n));
         netCh = connect(requires(Network.class), node.getNegative(Network.class), Channel.TWO_WAY);
-        tmrCh = connect(requires(Timer.class), node.getNegative(Timer.class), Channel.TWO_WAY);
+
+        Component epfd = create(EPFD.class, se.sics.kompics.Init.NONE);
+        tmrCh = connect(epfd.getNegative(Timer.class), requires(Timer.class)); // ok
 
         Component viewSync = create(ViewSync.class, se.sics.kompics.Init.NONE);
         connect(node.getPositive(ViewSyncPort.class), viewSync.getNegative(ViewSyncPort.class), Channel.TWO_WAY);
 
+        connect(viewSync.getNegative(EPFDPort.class), epfd.getPositive(EPFDPort.class)); // ok
+
         Component kvStore = create(KVStore.class, se.sics.kompics.Init.NONE);
         connect(node.getPositive(KVStorePort.class), kvStore.getNegative(KVStorePort.class), Channel.TWO_WAY);
-        connect(viewSync.getPositive(KVStorePort.class), kvStore.getNegative(KVStorePort.class), Channel.TWO_WAY);
+
+        connect(viewSync.getPositive(KVStorePort.class), kvStore.getNegative(KVStorePort.class), Channel.ONE_WAY_NEG); // ok
     }
 
     public static class Init extends se.sics.kompics.Init<NodeParent> {
