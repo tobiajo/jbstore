@@ -1,10 +1,11 @@
 package se.sics.test;
 
+import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import se.sics.kompics.network.Address;
 
-public class TAddress implements Address {
+public class TAddress implements Address, Serializable {
 
     private final InetSocketAddress isa;
 
@@ -60,5 +61,4 @@ public class TAddress implements Address {
         }
         return true;
     }
-
 }

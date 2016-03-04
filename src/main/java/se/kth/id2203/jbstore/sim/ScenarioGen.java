@@ -17,9 +17,8 @@ import java.net.UnknownHostException;
 
 public class ScenarioGen {
 
-    public static final String IP_NET = "240.0.0.";
-    public static final int PORT = 0;
-    public static final int NODES = 3;
+    public static final String IP = "127.0.0.0";
+    public static final int NODES = 5;
 
     static Operation1 startCreatorOp = new Operation1<StartNodeEvent, Integer>() {
 
@@ -30,7 +29,7 @@ public class ScenarioGen {
 
                 {
                     try {
-                        selfAdr = new TAddress(InetAddress.getByName(IP_NET + self), PORT);
+                        selfAdr = new TAddress(InetAddress.getByName(IP), self);
                     } catch (UnknownHostException ex) {
                         throw new RuntimeException(ex);
                     }
@@ -48,7 +47,7 @@ public class ScenarioGen {
 
                 @Override
                 public Init getComponentInit() {
-                    return new NodeParent.Init(selfAdr, null, self, NODES);
+                    return new NodeParent.Init(false, selfAdr, null, self, NODES);
                 }
 
                 @Override
@@ -69,8 +68,8 @@ public class ScenarioGen {
 
                 {
                     try {
-                        selfAdr = new TAddress(InetAddress.getByName(IP_NET + self), PORT);
-                        memberAdr = new TAddress(InetAddress.getByName(IP_NET + member), PORT);
+                        selfAdr = new TAddress(InetAddress.getByName(IP), self);
+                        memberAdr = new TAddress(InetAddress.getByName(IP), member);
                     } catch (UnknownHostException ex) {
                         throw new RuntimeException(ex);
                     }
@@ -88,7 +87,7 @@ public class ScenarioGen {
 
                 @Override
                 public Init getComponentInit() {
-                    return new NodeParent.Init(selfAdr, memberAdr, self, NODES);
+                    return new NodeParent.Init(false, selfAdr, memberAdr, self, NODES);
                 }
 
                 @Override
@@ -109,8 +108,8 @@ public class ScenarioGen {
 
                 {
                     try {
-                        selfAdr = new TAddress(InetAddress.getByName(IP_NET + self), PORT);
-                        memberAdr = new TAddress(InetAddress.getByName(IP_NET + member), PORT);
+                        selfAdr = new TAddress(InetAddress.getByName(IP), self);
+                        memberAdr = new TAddress(InetAddress.getByName(IP), member);
                     } catch (UnknownHostException ex) {
                         throw new RuntimeException(ex);
                     }
@@ -128,7 +127,7 @@ public class ScenarioGen {
 
                 @Override
                 public Init getComponentInit() {
-                    return new ClientParent.Init(selfAdr, memberAdr);
+                    return new ClientParent.Init(false, selfAdr, memberAdr);
                 }
 
                 @Override
@@ -155,9 +154,7 @@ public class ScenarioGen {
                 StochasticProcess joiner = new StochasticProcess() {
                     {
                         eventInterArrivalTime(constant(1000));
-                        for (int i = 0; i < NODES - 1; i++) {
-                            raise(1, startJoinerOp, joinerIp, creatorIp);
-                        }
+                        raise(NODES-1, startJoinerOp, joinerIp, creatorIp);
                     }
                 };
 

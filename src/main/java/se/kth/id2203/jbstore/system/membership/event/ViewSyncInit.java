@@ -7,13 +7,13 @@ public class ViewSyncInit implements KompicsEvent {
 
     public final TAddress self;
     public final TAddress member;
-    public final int selfId;
+    public final int id;
     public final int n;
 
-    public ViewSyncInit(TAddress self, TAddress member, int selfId, int n) {
+    public ViewSyncInit(TAddress self, TAddress member, int id, int n) {
         this.self = self;
         this.member = member;
-        this.selfId = selfId;
+        this.id = id;
         this.n = n;
     }
 }

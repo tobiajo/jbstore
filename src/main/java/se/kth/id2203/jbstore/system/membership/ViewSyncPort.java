@@ -1,13 +1,14 @@
 package se.kth.id2203.jbstore.system.membership;
 
 import se.kth.id2203.jbstore.system.membership.event.*;
-import se.kth.id2203.jbstore.system.network.NetMsg;
+import se.kth.id2203.jbstore.system.network.event.NodeMsg;
 import se.sics.kompics.PortType;
 
 public class ViewSyncPort extends PortType {
-    public ViewSyncPort() {
+
+    {
+        indication(NodeMsg.class);
         indication(ViewSyncInit.class);
-        indication(NetMsg.class);
-        request(NetMsg.class);
+
     }
 }
