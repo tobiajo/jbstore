@@ -122,12 +122,12 @@ public class ViewSync extends ComponentDefinition {
 
     private HashSet<TAddress> getReplicationGroup() {
         HashSet<TAddress> replicationGroup = new HashSet<>();
-        Iterator it = view.keySet().iterator();
+        Iterator it = view.keySet().iterator(); // sorted!
         while ((int) it.next() != id);
         replicationGroup.add(view.get(id));
         for (int i = 0; i < KVStore.replicationDegree - 1; i++) {
             if (!it.hasNext()) {
-                it = view.keySet().iterator();
+                it = view.keySet().iterator(); // sorted!
             }
             replicationGroup.add(view.get(it.next()));
         }
