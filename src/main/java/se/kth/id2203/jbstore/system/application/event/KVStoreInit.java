@@ -3,13 +3,14 @@ package se.kth.id2203.jbstore.system.application.event;
 import se.sics.kompics.KompicsEvent;
 import se.sics.test.TAddress;
 
+import java.util.HashMap;
 import java.util.HashSet;
 
 public class KVStoreInit implements KompicsEvent {
 
-    public final HashSet<TAddress> replicationGroup;
+    public final HashMap<Integer,HashSet<TAddress>> replicationGroups;
 
-    public KVStoreInit(HashSet<TAddress> replicationGroup) {
-        this.replicationGroup = replicationGroup;
+    public KVStoreInit(HashMap<Integer, HashSet<TAddress>> replicationGroups) {
+        this.replicationGroups = replicationGroups;
     }
 }

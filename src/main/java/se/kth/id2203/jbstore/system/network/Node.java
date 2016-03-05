@@ -27,10 +27,10 @@ public class Node extends ComponentDefinition {
     private final Logger log;
 
     public Node(Init init) {
-        self = init.self;
-        member = init.member;
-        id = init.id;
-        n = init.n;
+        this.self = init.self;
+        this.member = init.member;
+        this.id = init.id;
+        this.n = init.n;
         log = LoggerFactory.getLogger("Node" + id);
     }
 
@@ -62,7 +62,7 @@ public class Node extends ComponentDefinition {
     private Handler<NodeMsgSend> netMsgSendHandler = new Handler<NodeMsgSend>() {
         @Override
         public void handle(NodeMsgSend event) {
-            NodeMsg nodeMsg = new NodeMsg(self, event.dst, event.comp, event.cmd, event.rid, event.body);
+            NodeMsg nodeMsg = new NodeMsg(self, event.dst, event.rid, event.comp, event.cmd, event.inst, event.body);
             trigger(nodeMsg, networkPositive);
             log.info("Sent: " + nodeMsg.toString());
         }

@@ -18,9 +18,10 @@ public class NodeMsgSerializer implements Serializer {
     public void toBinary(Object o, ByteBuf buf) {
         NodeMsg nodeMsg = (NodeMsg) o;
         Serializers.toBinary(nodeMsg.header, buf);                                  // write THeader
+        buf.writeLong(nodeMsg.rid);                                                 // write long
         buf.writeByte(nodeMsg.comp);                                                // write byte
         buf.writeByte(nodeMsg.cmd);                                                 // write byte
-        buf.writeLong(nodeMsg.rid);                                                 // write long
+        buf.writeInt(nodeMsg.inst);                                                 // write int
         byte[] data = SerializationUtils.serialize(nodeMsg.body);
         buf.writeInt(data.length);                                                  // write int
         buf.writeBytes(data);                                                       // write x * byte
@@ -29,13 +30,14 @@ public class NodeMsgSerializer implements Serializer {
     @Override
     public Object fromBinary(ByteBuf buf, Optional<Object> hint) {
         THeader header = (THeader) Serializers.fromBinary(buf, Optional.absent());  // read THeader
+        long rid   = buf.readLong();                                                // read long
         byte comp = buf.readByte();                                                 // read byte
         byte cmd = buf.readByte();                                                  // read byte
-        long rid   = buf.readLong();                                                // read long
+        int inst = buf.readInt();                                                   // read int
         byte[] data = new byte[buf.readInt()];                                      // read int
         for (int i = 0; i < data.length; i++) {
             data[i] = buf.readByte();                                               // read x * byte
         }
-        return new NodeMsg(header.src, header.dst, comp, cmd, rid, SerializationUtils.deserialize(data));
+        return new NodeMsg(header.src, header.dst, rid, comp, cmd, inst, SerializationUtils.deserialize(data));
     }
 }

@@ -18,7 +18,7 @@ import java.net.UnknownHostException;
 public class ScenarioGen {
 
     public static final String IP = "127.0.0.0";
-    public static final int NODES = 5;
+    public static final int NODES = 6;
 
     static Operation1 startCreatorOp = new Operation1<StartNodeEvent, Integer>() {
 
@@ -141,8 +141,8 @@ public class ScenarioGen {
     public static SimulationScenario simpleCluster() {
         SimulationScenario scen = new SimulationScenario() {
             {
-                ConstantDistribution creatorIp = new ConstantDistribution(Integer.class, 1);
-                BasicIntSequentialDistribution joinerIp = new BasicIntSequentialDistribution(2);
+                ConstantDistribution creatorIp = new ConstantDistribution(Integer.class, 0);
+                BasicIntSequentialDistribution joinerIp = new BasicIntSequentialDistribution(1);
 
                 StochasticProcess creator = new StochasticProcess() {
                     {

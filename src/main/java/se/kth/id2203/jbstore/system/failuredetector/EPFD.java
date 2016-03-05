@@ -21,10 +21,10 @@ import java.util.Set;
 
 public class EPFD extends ComponentDefinition {
 
-    private final Random rnd = new Random();
     private final Positive<Timer> timerPositive = requires(Timer.class);
     private final Positive<NodePort> nodePortPositive = requires(NodePort.class);
     private final Positive<EPFDPort> epfdPortPositive = requires(EPFDPort.class);
+    private final Random rnd = new Random();
 
     private EventuallyPerfectFailureDetector diamondP;
 
@@ -32,7 +32,6 @@ public class EPFD extends ComponentDefinition {
         @Override
         public void handle(EPFDInit event) {
             diamondP = new EventuallyPerfectFailureDetector(event.nodesToMonitor);
-            diamondP.init();
         }
     };
 
@@ -68,13 +67,13 @@ public class EPFD extends ComponentDefinition {
         subscribe(heartbeatTimeoutHandler, timerPositive);
     }
 
-    private void send(TAddress dst, byte cmd, long rid, Serializable body) {
-        trigger(new NodeMsgSend(dst, NodeMsg.EPFD, cmd, rid, body), nodePortPositive);
+    private void send(TAddress dst, long rid, byte cmd, Serializable body) {
+        trigger(new NodeMsgSend(dst, rid, NodeMsg.EPFD, cmd, -1, body), nodePortPositive);
     }
 
-    private void send(Set<TAddress> dstGroup, byte cmd, long rid, Serializable body) {
+    private void send(Set<TAddress> dstGroup, long rid, byte cmd, Serializable body) {
         for (TAddress dst : dstGroup) {
-            send(dst, cmd, rid, body);
+            send(dst, rid, cmd, body);
         }
     }
 
@@ -97,6 +96,7 @@ public class EPFD extends ComponentDefinition {
 
         EventuallyPerfectFailureDetector(HashSet<TAddress> nodesToMonitor) {
             this.nodesToMonitor = nodesToMonitor;
+            diamondP.init();
         }
 
         void init() {
@@ -118,7 +118,7 @@ public class EPFD extends ComponentDefinition {
                     suspected.remove(p);
                     trigger(new EPFDRestore(p), epfdPortPositive);
                 }
-                send(p, NodeMsg.HEARTBEAT_REQUEST, ++rid, null);
+                send(p, ++rid, NodeMsg.HEARTBEAT_REQUEST, null);
             }
             alive = new HashSet<>();
             startTimer(delay);
@@ -131,7 +131,7 @@ public class EPFD extends ComponentDefinition {
         }
 
         void heartbeatRequest(NodeMsg nodeMsg) {
-            send(nodeMsg.getSource(), NodeMsg.HEARTBEAT_REPLY, nodeMsg.rid, null);
+            send(nodeMsg.getSource(), nodeMsg.rid, NodeMsg.HEARTBEAT_REPLY, null);
         }
 
         void heartbeatReply(NodeMsg nodeMsg) {

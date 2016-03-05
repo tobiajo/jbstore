@@ -27,16 +27,18 @@ public class NodeMsg extends TMessage {
     public static final byte WRITE = 27;
     public static final byte ACK = 28;
 
+    public final long rid;
     public final byte comp;
     public final byte cmd;
-    public final long rid;
+    public final int inst;
     public final Serializable body;
 
-    public NodeMsg(TAddress src, TAddress dst, byte comp, byte cmd, long rid, Serializable body) {
+    public NodeMsg(TAddress src, TAddress dst, long rid, byte comp, byte cmd, int inst, Serializable body) {
         super(src, dst, Transport.TCP);
+        this.rid = rid;
         this.comp = comp;
         this.cmd = cmd;
-        this.rid = rid;
+        this.inst = inst;
         this.body = body;
     }
 
@@ -88,6 +90,6 @@ public class NodeMsg extends TMessage {
 
     @Override
     public String toString() {
-        return "{" + getSource() + ", " + getDestination() + ", " + getCompString() + ", " +getCmdString() + ", " + rid + ", " +  body + "}";
+        return "{" + getSource() + ", " + getDestination() + ", " + rid+ ", " + getCompString() + ", " +getCmdString() + ", " + inst + ", " +  body + "}";
     }
 }
