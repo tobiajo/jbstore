@@ -36,7 +36,7 @@ public class Client extends ComponentDefinition {
     private Handler<Start> startHandler = new Handler<Start>() {
         @Override
         public void handle(Start start) {
-            viewRequest();
+            //viewRequest();
         }
     };
 
@@ -105,11 +105,11 @@ public class Client extends ComponentDefinition {
     }
 
     private int getRndNode(int groupId) {
-        LinkedList<Integer> group = getMainGroup(groupId);
+        LinkedList<Integer> group = getReplicationGroup(groupId);
         return group.get(rnd.nextInt(group.size()));
     }
 
-    private LinkedList<Integer> getMainGroup(int nodeId) {
+    private LinkedList<Integer> getReplicationGroup(int nodeId) {
         LinkedList<Integer> group = new LinkedList<>();
         group.add(nodeId);
         ListIterator<Integer> it = Util.getSortedList(view.keySet()).listIterator();
