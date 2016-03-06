@@ -154,7 +154,7 @@ public class ScenarioGen {
                 StochasticProcess joiner = new StochasticProcess() {
                     {
                         eventInterArrivalTime(constant(1000));
-                        raise(NODES-1, startJoinerOp, joinerIp, creatorIp);
+                        raise(NODES - 1, startJoinerOp, joinerIp, creatorIp);
                     }
                 };
 

@@ -1,12 +1,10 @@
-package se.kth.id2203.jbstore.system.failuredetector;
+package se.kth.id2203.jbstore.system.node.sub.failuredetector;
 
-import se.kth.id2203.jbstore.system.network.NodePort;
-import se.kth.id2203.jbstore.system.failuredetector.event.EPFDInit;
-import se.kth.id2203.jbstore.system.failuredetector.event.EPFDRestore;
-import se.kth.id2203.jbstore.system.failuredetector.event.EPFDSuspect;
-import se.kth.id2203.jbstore.system.network.event.NodeMsg;
-import se.kth.id2203.jbstore.system.network.event.NodeMsgSend;
-import se.sics.kompics.ComponentDefinition;
+import se.kth.id2203.jbstore.system.node.sub.SubComponent;
+import se.kth.id2203.jbstore.system.node.sub.failuredetector.event.EPFDInit;
+import se.kth.id2203.jbstore.system.node.sub.failuredetector.event.EPFDRestore;
+import se.kth.id2203.jbstore.system.node.sub.failuredetector.event.EPFDSuspect;
+import se.kth.id2203.jbstore.system.node.core.event.NodeMsg;
 import se.sics.kompics.Handler;
 import se.sics.kompics.Positive;
 import se.sics.kompics.timer.ScheduleTimeout;
@@ -14,15 +12,12 @@ import se.sics.kompics.timer.Timeout;
 import se.sics.kompics.timer.Timer;
 import se.sics.test.TAddress;
 
-import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Random;
-import java.util.Set;
 
-public class EPFD extends ComponentDefinition {
+public class EPFD extends SubComponent {
 
     private final Positive<Timer> timerPositive = requires(Timer.class);
-    private final Positive<NodePort> nodePortPositive = requires(NodePort.class);
     private final Positive<EPFDPort> epfdPortPositive = requires(EPFDPort.class);
     private final Random rnd = new Random();
 
@@ -31,6 +26,7 @@ public class EPFD extends ComponentDefinition {
     private Handler<EPFDInit> epfdInitHandler = new Handler<EPFDInit>() {
         @Override
         public void handle(EPFDInit event) {
+            comp = NodeMsg.EPFD;
             diamondP = new EventuallyPerfectFailureDetector(event.nodesToMonitor);
         }
     };
@@ -67,16 +63,6 @@ public class EPFD extends ComponentDefinition {
         subscribe(heartbeatTimeoutHandler, timerPositive);
     }
 
-    private void send(TAddress dst, long rid, byte cmd, Serializable body) {
-        trigger(new NodeMsgSend(dst, rid, NodeMsg.EPFD, cmd, -1, body), nodePortPositive);
-    }
-
-    private void send(Set<TAddress> dstGroup, long rid, byte cmd, Serializable body) {
-        for (TAddress dst : dstGroup) {
-            send(dst, rid, cmd, body);
-        }
-    }
-
     private void startTimer(long delay) {
         ScheduleTimeout st = new ScheduleTimeout(delay);
         st.setTimeoutEvent(new HeartbeatTimeout(st));
@@ -96,7 +82,7 @@ public class EPFD extends ComponentDefinition {
 
         EventuallyPerfectFailureDetector(HashSet<TAddress> nodesToMonitor) {
             this.nodesToMonitor = nodesToMonitor;
-            diamondP.init();
+            init();
         }
 
         void init() {
@@ -118,7 +104,7 @@ public class EPFD extends ComponentDefinition {
                     suspected.remove(p);
                     trigger(new EPFDRestore(p), epfdPortPositive);
                 }
-                send(p, ++rid, NodeMsg.HEARTBEAT_REQUEST, null);
+                send(p, ++rid, NodeMsg.HEARTBEAT_REQUEST, 0, null);
             }
             alive = new HashSet<>();
             startTimer(delay);
@@ -131,7 +117,7 @@ public class EPFD extends ComponentDefinition {
         }
 
         void heartbeatRequest(NodeMsg nodeMsg) {
-            send(nodeMsg.getSource(), nodeMsg.rid, NodeMsg.HEARTBEAT_REPLY, null);
+            send(nodeMsg.getSource(), nodeMsg.rid, NodeMsg.HEARTBEAT_REPLY, 0, null);
         }
 
         void heartbeatReply(NodeMsg nodeMsg) {

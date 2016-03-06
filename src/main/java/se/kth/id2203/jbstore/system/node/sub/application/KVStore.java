@@ -1,27 +1,22 @@
-package se.kth.id2203.jbstore.system.application;
+package se.kth.id2203.jbstore.system.node.sub.application;
 
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
-import se.kth.id2203.jbstore.system.network.NodePort;
-import se.kth.id2203.jbstore.system.application.event.*;
-import se.kth.id2203.jbstore.system.network.event.NodeMsg;
-import se.kth.id2203.jbstore.system.network.event.NodeMsgSend;
-import se.sics.kompics.ComponentDefinition;
+import se.kth.id2203.jbstore.system.node.sub.SubComponent;
+import se.kth.id2203.jbstore.system.node.sub.application.event.*;
+import se.kth.id2203.jbstore.system.node.core.event.NodeMsg;
 import se.sics.kompics.Handler;
 import se.sics.kompics.Positive;
 import se.sics.test.TAddress;
 
-public class KVStore extends ComponentDefinition {
+public class KVStore extends SubComponent {
 
     public static final int REPLICATION_DEGREE = 3;
-
-    private final Positive<NodePort> nodePortPositive = requires(NodePort.class);
     private final Positive<KVStorePort> kvStorePortPositive = requires(KVStorePort.class);
 
     private HashMap<Integer, AtomicRegister> onars;
@@ -29,6 +24,7 @@ public class KVStore extends ComponentDefinition {
     private Handler<KVStoreInit> kvStoreInitHandler = new Handler<KVStoreInit>() {
         @Override
         public void handle(KVStoreInit event) {
+            comp = NodeMsg.KV_STORE;
             onars = new HashMap<>();
             for (Map.Entry<Integer, HashSet<TAddress>> group : event.replicationGroups.entrySet()) {
                 onars.put(group.getKey(), new AtomicRegister(group.getKey(), group.getValue()));
@@ -69,16 +65,6 @@ public class KVStore extends ComponentDefinition {
     {
         subscribe(kvStoreInitHandler, kvStorePortPositive);
         subscribe(netMsgHandler, kvStorePortPositive);
-    }
-
-    private void send(TAddress dst, long rid, byte cmd, int inst, Serializable body) {
-        trigger(new NodeMsgSend(dst, rid, NodeMsg.KV_STORE, cmd, inst, body), nodePortPositive);
-    }
-
-    private void send(Set<TAddress> dstGroup, long rid, byte cmd, int inst, Serializable body) {
-        for (TAddress dst : dstGroup) {
-            send(dst, rid, cmd, inst, body);
-        }
     }
 
     private void readReturn(TAddress requester, long rid, int inst, Serializable value) {
@@ -128,7 +114,7 @@ public class KVStore extends ComponentDefinition {
             ridAcks.put(rid, 0);
             ridReading.put(rid, true);
             ridReadlist.put(rid, new HashMap<>());
-            send(group, nodeMsg.rid, NodeMsg.READ, groupId, Pair.of(rid, key));
+            bcast(group, nodeMsg.rid, NodeMsg.READ, groupId, Pair.of(rid, key));
         }
 
         void read(NodeMsg nodeMsg) {
@@ -149,7 +135,7 @@ public class KVStore extends ComponentDefinition {
             if (ridReadlist.get(r).size() > group.size() / 2) {
                 Pair<Long, Serializable> maxtsReadval = highest(r);
                 ridReadlist.get(r).clear();
-                send(group, nodeMsg.rid, NodeMsg.WRITE, groupId, Triple.of(r, key, maxtsReadval));
+                bcast(group, nodeMsg.rid, NodeMsg.WRITE, groupId, Triple.of(r, key, maxtsReadval));
             }
         }
 
@@ -172,14 +158,14 @@ public class KVStore extends ComponentDefinition {
             rid = rid + 1;
             ridAcks.put(rid, 0);
             ridRequester.put(rid, nodeMsg.getSource());
-            send(group, nodeMsg.rid, NodeMsg.WRITE, groupId, Triple.of(rid, key, Pair.of(wts, v)));
+            bcast(group, nodeMsg.rid, NodeMsg.WRITE, groupId, Triple.of(rid, key, Pair.of(wts, v)));
         }
 
         void write(NodeMsg nodeMsg) {
             Triple<Long, String, Pair<Long, Serializable>> rKeyTsprimeVprime = (Triple<Long, String, Pair<Long, Serializable>>) nodeMsg.body;
             long r = rKeyTsprimeVprime.getLeft();
             String key = rKeyTsprimeVprime.getMiddle();
-            Pair<Long, Serializable> tsprimeVprime= rKeyTsprimeVprime.getRight();
+            Pair<Long, Serializable> tsprimeVprime = rKeyTsprimeVprime.getRight();
             //
             if (keyTsVal.get(key) == null || tsprimeVprime.getLeft() > keyTsVal.get(key).getLeft()) {
                 keyTsVal.put(key, tsprimeVprime);

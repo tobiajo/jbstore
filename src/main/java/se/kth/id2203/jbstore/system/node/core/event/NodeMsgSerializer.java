@@ -1,4 +1,4 @@
-package se.kth.id2203.jbstore.system.network.event;
+package se.kth.id2203.jbstore.system.node.core.event;
 
 import com.google.common.base.Optional;
 import io.netty.buffer.ByteBuf;
@@ -30,7 +30,7 @@ public class NodeMsgSerializer implements Serializer {
     @Override
     public Object fromBinary(ByteBuf buf, Optional<Object> hint) {
         THeader header = (THeader) Serializers.fromBinary(buf, Optional.absent());  // read THeader
-        long rid   = buf.readLong();                                                // read long
+        long rid = buf.readLong();                                                  // read long
         byte comp = buf.readByte();                                                 // read byte
         byte cmd = buf.readByte();                                                  // read byte
         int inst = buf.readInt();                                                   // read int

@@ -1,27 +1,25 @@
-package se.kth.id2203.jbstore.system.membership;
+package se.kth.id2203.jbstore.system.node.sub.membership;
 
-import se.kth.id2203.jbstore.system.application.KVStore;
-import se.kth.id2203.jbstore.system.network.NodePort;
-import se.kth.id2203.jbstore.system.application.KVStorePort;
-import se.kth.id2203.jbstore.system.application.event.KVStoreInit;
-import se.kth.id2203.jbstore.system.failuredetector.EPFDPort;
-import se.kth.id2203.jbstore.system.failuredetector.event.EPFDRestore;
-import se.kth.id2203.jbstore.system.failuredetector.event.EPFDSuspect;
-import se.kth.id2203.jbstore.system.membership.event.*;
-import se.kth.id2203.jbstore.system.network.event.NodeMsg;
-import se.kth.id2203.jbstore.system.network.event.NodeMsgSend;
-import se.sics.kompics.ComponentDefinition;
+import se.kth.id2203.jbstore.system.Util;
+import se.kth.id2203.jbstore.system.node.sub.SubComponent;
+import se.kth.id2203.jbstore.system.node.sub.application.KVStore;
+import se.kth.id2203.jbstore.system.node.sub.application.KVStorePort;
+import se.kth.id2203.jbstore.system.node.sub.application.event.KVStoreInit;
+import se.kth.id2203.jbstore.system.node.sub.failuredetector.EPFDPort;
+import se.kth.id2203.jbstore.system.node.sub.failuredetector.event.EPFDInit;
+import se.kth.id2203.jbstore.system.node.sub.failuredetector.event.EPFDRestore;
+import se.kth.id2203.jbstore.system.node.sub.failuredetector.event.EPFDSuspect;
+import se.kth.id2203.jbstore.system.node.sub.membership.event.*;
+import se.kth.id2203.jbstore.system.node.core.event.NodeMsg;
 import se.sics.kompics.Handler;
 import se.sics.kompics.Negative;
 import se.sics.kompics.Positive;
 import se.sics.test.TAddress;
 
-import java.io.Serializable;
 import java.util.*;
 
-public class ViewSync extends ComponentDefinition {
+public class ViewSync extends SubComponent {
 
-    private final Positive<NodePort> nodePortPositive = requires(NodePort.class);
     private final Positive<ViewSyncPort> viewSyncPortPositive = requires(ViewSyncPort.class);
     private final Negative<EPFDPort> epfdPortNegative = provides(EPFDPort.class);
     private final Negative<KVStorePort> kvStorePortNegative = provides(KVStorePort.class);
@@ -33,13 +31,14 @@ public class ViewSync extends ComponentDefinition {
     private Handler<ViewSyncInit> viewSyncInitHandler = new Handler<ViewSyncInit>() {
         @Override
         public void handle(ViewSyncInit event) {
+            comp = NodeMsg.VIEW_SYNC;
             id = event.id;
             n = event.n;
             view = new HashMap<>();
             if (event.member == null) {
                 view.put(id, event.self);
             } else {
-                send(event.member, -1, NodeMsg.JOIN, id);
+                send(event.member, 0, NodeMsg.JOIN, 0, id);
             }
         }
     };
@@ -51,16 +50,16 @@ public class ViewSync extends ComponentDefinition {
                 case NodeMsg.JOIN:
                     view.put((Integer) nodeMsg.body, nodeMsg.getSource());
                     if (view.size() == n) {
-                        send(new HashSet<TAddress>(view.values()), -1, NodeMsg.VIEW, view);
+                        bcast(new HashSet<TAddress>(view.values()), 0, NodeMsg.VIEW, 0, view);
                     }
                     break;
                 case NodeMsg.VIEW:
                     view = (HashMap<Integer, TAddress>) nodeMsg.body;
-                    //trigger(new EPFDInit(getNodesToMonitor()), epfdPortNegative);
+                    trigger(new EPFDInit(getNodesToMonitor()), epfdPortNegative);
                     trigger(new KVStoreInit(getReplicationGroups()), kvStorePortNegative);
                     break;
                 case NodeMsg.VIEW_REQUEST:
-                    send(nodeMsg.getSource(), nodeMsg.rid, NodeMsg.VIEW, view);
+                    send(nodeMsg.getSource(), nodeMsg.rid, NodeMsg.VIEW, 0, view);
                     break;
             }
         }
@@ -85,16 +84,6 @@ public class ViewSync extends ComponentDefinition {
         subscribe(netMsgHandler, viewSyncPortPositive);
         subscribe(epfdSuspectHandler, epfdPortNegative);
         subscribe(epfdRestoreHandler, epfdPortNegative);
-    }
-
-    private void send(TAddress dst, long rid, byte cmd, Serializable body) {
-        trigger(new NodeMsgSend(dst, rid, NodeMsg.VIEW_SYNC, cmd, -1, body), nodePortPositive);
-    }
-
-    private void send(Set<TAddress> dstGroup, long rid, byte cmd, Serializable body) {
-        for (TAddress dst : dstGroup) {
-            send(dst, rid, cmd, body);
-        }
     }
 
     private HashSet<TAddress> getNodesToMonitor() {
@@ -122,17 +111,17 @@ public class ViewSync extends ComponentDefinition {
     private HashMap<Integer, HashSet<TAddress>> getReplicationGroups() {
         HashMap<Integer, HashSet<TAddress>> replicationGroups = new HashMap<>();
         replicationGroups.put(id, getReplicationGroup(id));
-        ListIterator it = new LinkedList<>(view.keySet()).listIterator();
-        while ((int) it.next() != id);
+        ListIterator<Integer> it = Util.getSortedList(view.keySet()).listIterator();
+        while (it.next() != id);
         for (int i = 0; i <= KVStore.REPLICATION_DEGREE - 1; i++) {
             if (!it.hasPrevious()) {
-                it = new LinkedList<>(view.keySet()).listIterator();
+                it = Util.getSortedList(view.keySet()).listIterator();
                 while (it.hasNext()) it.next();
-                int lastNodeId = (int) it.previous();
+                int lastNodeId = it.previous();
                 //System.out.println(id + " " + lastNodeId + "(last)");
                 replicationGroups.put(lastNodeId, getReplicationGroup(lastNodeId));
             } else {
-                int prevNodeId = (int) it.previous();
+                int prevNodeId = it.previous();
                 //System.out.println(id + " " + prevNodeId + "(prev)");
                 replicationGroups.put(prevNodeId, getReplicationGroup(prevNodeId));
             }
@@ -146,22 +135,14 @@ public class ViewSync extends ComponentDefinition {
     private HashSet<TAddress> getReplicationGroup(int nodeId) {
         HashSet<TAddress> replicationGroup = new HashSet<>();
         replicationGroup.add(view.get(nodeId));
-        Iterator it = view.keySet().iterator(); // sorted!
-        while ((int) it.next() != nodeId) ;
+        ListIterator<Integer> it = Util.getSortedList(view.keySet()).listIterator();
+        while (it.next() != nodeId) ;
         for (int i = 0; i < KVStore.REPLICATION_DEGREE - 1; i++) {
             if (!it.hasNext()) {
-                it = view.keySet().iterator(); // sorted!
+                it = Util.getSortedList(view.keySet()).listIterator();
             }
             replicationGroup.add(view.get(it.next()));
         }
         return replicationGroup;
-    }
-
-    private int getNextIndex(List list, int index) {
-        return index + 1 % list.size();
-    }
-
-    private int getPrevIndex(List list, int index) {
-        return index - 1 % list.size();
     }
 }

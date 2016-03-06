@@ -1,4 +1,4 @@
-package se.kth.id2203.jbstore.system.network.event;
+package se.kth.id2203.jbstore.system.node.core.event;
 
 import se.sics.kompics.network.Transport;
 import se.sics.test.TAddress;
@@ -90,6 +90,6 @@ public class NodeMsg extends TMessage {
 
     @Override
     public String toString() {
-        return "{" + getSource() + ", " + getDestination() + ", " + rid+ ", " + getCompString() + ", " +getCmdString() + ", " + inst + ", " +  body + "}";
+        return "{" + getSource() + ", " + getDestination() + ", " + rid + ", " + getCompString() + ", " + getCmdString() + ", " + inst + ", " + body + "}";
     }
 }

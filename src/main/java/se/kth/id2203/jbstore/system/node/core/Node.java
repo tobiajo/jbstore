@@ -1,13 +1,14 @@
-package se.kth.id2203.jbstore.system.network;
+package se.kth.id2203.jbstore.system.node.core;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import se.kth.id2203.jbstore.system.application.KVStorePort;
-import se.kth.id2203.jbstore.system.failuredetector.EPFDPort;
-import se.kth.id2203.jbstore.system.membership.ViewSyncPort;
-import se.kth.id2203.jbstore.system.membership.event.*;
-import se.kth.id2203.jbstore.system.network.event.NodeMsg;
-import se.kth.id2203.jbstore.system.network.event.NodeMsgSend;
+import se.kth.id2203.jbstore.system.node.sub.application.KVStorePort;
+import se.kth.id2203.jbstore.system.node.sub.failuredetector.EPFDPort;
+import se.kth.id2203.jbstore.system.node.sub.membership.ViewSyncPort;
+import se.kth.id2203.jbstore.system.node.sub.membership.event.*;
+import se.kth.id2203.jbstore.system.node.core.event.NodeMsg;
+import se.kth.id2203.jbstore.system.node.core.event.NodeMsgBcast;
+import se.kth.id2203.jbstore.system.node.core.event.NodeMsgSend;
 import se.sics.kompics.*;
 import se.sics.kompics.network.Network;
 import se.sics.test.TAddress;
@@ -41,7 +42,7 @@ public class Node extends ComponentDefinition {
         }
     };
 
-    private Handler<NodeMsg> netMsgDeliverHandler = new Handler<NodeMsg>() {
+    private Handler<NodeMsg> nodeMsgHandler = new Handler<NodeMsg>() {
         @Override
         public void handle(NodeMsg nodeMsg) {
             log.info("Rcvd: " + nodeMsg.toString());
@@ -59,7 +60,7 @@ public class Node extends ComponentDefinition {
         }
     };
 
-    private Handler<NodeMsgSend> netMsgSendHandler = new Handler<NodeMsgSend>() {
+    private Handler<NodeMsgSend> nodeMsgSendHandler = new Handler<NodeMsgSend>() {
         @Override
         public void handle(NodeMsgSend event) {
             NodeMsg nodeMsg = new NodeMsg(self, event.dst, event.rid, event.comp, event.cmd, event.inst, event.body);
@@ -68,10 +69,22 @@ public class Node extends ComponentDefinition {
         }
     };
 
+    private Handler<NodeMsgBcast> nodeMsgBroadcastHandler = new Handler<NodeMsgBcast>() {
+        @Override
+        public void handle(NodeMsgBcast event) {
+            for (TAddress dst : event.dstGroup) {
+                NodeMsg nodeMsg = new NodeMsg(self, dst, event.rid, event.comp, event.cmd, event.inst, event.body);
+                trigger(nodeMsg, networkPositive);
+                log.info("Sent: " + nodeMsg.toString());
+            }
+        }
+    };
+
     {
         subscribe(startHandler, control);
-        subscribe(netMsgDeliverHandler, networkPositive);
-        subscribe(netMsgSendHandler, nodePortNegative);
+        subscribe(nodeMsgHandler, networkPositive);
+        subscribe(nodeMsgSendHandler, nodePortNegative);
+        subscribe(nodeMsgBroadcastHandler, nodePortNegative);
     }
 
     public static class Init extends se.sics.kompics.Init<Node> {

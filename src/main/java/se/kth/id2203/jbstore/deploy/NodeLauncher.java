@@ -1,8 +1,8 @@
 package se.kth.id2203.jbstore.deploy;
 
 import se.kth.id2203.jbstore.system.NodeParent;
-import se.kth.id2203.jbstore.system.network.event.NodeMsg;
-import se.kth.id2203.jbstore.system.network.event.NodeMsgSerializer;
+import se.kth.id2203.jbstore.system.node.core.event.NodeMsg;
+import se.kth.id2203.jbstore.system.node.core.event.NodeMsgSerializer;
 import se.sics.kompics.Kompics;
 import se.sics.kompics.network.netty.serialization.Serializers;
 import se.sics.test.*;

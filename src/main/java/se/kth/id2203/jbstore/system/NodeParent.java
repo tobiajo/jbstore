@@ -1,13 +1,13 @@
 package se.kth.id2203.jbstore.system;
 
-import se.kth.id2203.jbstore.system.application.KVStore;
-import se.kth.id2203.jbstore.system.application.KVStorePort;
-import se.kth.id2203.jbstore.system.failuredetector.EPFD;
-import se.kth.id2203.jbstore.system.failuredetector.EPFDPort;
-import se.kth.id2203.jbstore.system.membership.ViewSync;
-import se.kth.id2203.jbstore.system.membership.ViewSyncPort;
-import se.kth.id2203.jbstore.system.network.Node;
-import se.kth.id2203.jbstore.system.network.NodePort;
+import se.kth.id2203.jbstore.system.node.sub.application.KVStore;
+import se.kth.id2203.jbstore.system.node.sub.application.KVStorePort;
+import se.kth.id2203.jbstore.system.node.sub.failuredetector.EPFD;
+import se.kth.id2203.jbstore.system.node.sub.failuredetector.EPFDPort;
+import se.kth.id2203.jbstore.system.node.sub.membership.ViewSync;
+import se.kth.id2203.jbstore.system.node.sub.membership.ViewSyncPort;
+import se.kth.id2203.jbstore.system.node.core.Node;
+import se.kth.id2203.jbstore.system.node.core.NodePort;
 import se.sics.kompics.Channel;
 import se.sics.kompics.Component;
 import se.sics.kompics.ComponentDefinition;

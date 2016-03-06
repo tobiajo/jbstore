@@ -1,4 +1,4 @@
-package se.kth.id2203.jbstore.system.failuredetector.event;
+package se.kth.id2203.jbstore.system.node.sub.failuredetector.event;
 
 import se.sics.kompics.KompicsEvent;
 import se.sics.test.TAddress;

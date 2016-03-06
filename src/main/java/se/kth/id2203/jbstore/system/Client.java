@@ -5,18 +5,15 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import se.kth.id2203.jbstore.system.application.KVStore;
-import se.kth.id2203.jbstore.system.network.event.NodeMsg;
+import se.kth.id2203.jbstore.system.node.sub.application.KVStore;
+import se.kth.id2203.jbstore.system.node.core.event.NodeMsg;
 import se.sics.kompics.*;
 import se.sics.kompics.network.Network;
 import se.sics.kompics.timer.Timer;
 import se.sics.test.TAddress;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Random;
+import java.util.*;
 
 public class Client extends ComponentDefinition {
 
@@ -70,7 +67,7 @@ public class Client extends ComponentDefinition {
     }
 
     private void viewRequest() {
-        send(member, NodeMsg.VIEW_SYNC, NodeMsg.VIEW_REQUEST, -1, null);
+        send(member, NodeMsg.VIEW_SYNC, NodeMsg.VIEW_REQUEST, 0, null);
     }
 
     private void put(String key, Serializable value) {
@@ -91,22 +88,22 @@ public class Client extends ComponentDefinition {
     }
 
     private int getRndNode(int groupId) {
-        ArrayList<Integer> group = getReplicationGroup(groupId);
+        LinkedList<Integer> group = getGroup(groupId);
         return group.get(rnd.nextInt(group.size()));
     }
 
-    private ArrayList<Integer> getReplicationGroup(int nodeId) {
-        ArrayList<Integer> replicationGroup = new ArrayList<>();
-        replicationGroup.add(nodeId);
-        Iterator it = view.keySet().iterator(); // sorted!
-        while ((int) it.next() != nodeId) ;
+    private LinkedList<Integer> getGroup(int nodeId) {
+        LinkedList<Integer> group = new LinkedList<>();
+        group.add(nodeId);
+        ListIterator<Integer> it = Util.getSortedList(view.keySet()).listIterator();
+        while (it.next() != nodeId) ;
         for (int i = 0; i < KVStore.REPLICATION_DEGREE - 1; i++) {
             if (!it.hasNext()) {
-                it = view.keySet().iterator(); // sorted!
+                it = Util.getSortedList(view.keySet()).listIterator();
             }
-            replicationGroup.add((Integer) it.next());
+            group.add(it.next());
         }
-        return replicationGroup;
+        return group;
     }
 
     private long getHash(Serializable value) {
