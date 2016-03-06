@@ -5,7 +5,6 @@ import se.sics.test.TAddress;
 
 import java.util.HashSet;
 
-
 public class EPFDInit implements KompicsEvent {
 
     public final HashSet<TAddress> nodesToMonitor;

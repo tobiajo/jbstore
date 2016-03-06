@@ -10,7 +10,7 @@ import se.sics.test.TAddress;
 import java.io.Serializable;
 import java.util.Set;
 
-public class SubComponent extends ComponentDefinition {
+public abstract class SubComponent extends ComponentDefinition {
 
     private final Positive<NodePort> nodePortPositive = requires(NodePort.class);
     protected byte comp;

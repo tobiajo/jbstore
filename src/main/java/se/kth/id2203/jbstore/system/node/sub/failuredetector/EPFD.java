@@ -72,7 +72,7 @@ public class EPFD extends SubComponent {
     // Algorithm 2.7: Increasing Timeout
     private class EventuallyPerfectFailureDetector {
 
-        static final long DELTA = 1000;
+        static final long DELTA = 10000;
         int rid = 0;
         final HashSet<TAddress> nodesToMonitor;
 

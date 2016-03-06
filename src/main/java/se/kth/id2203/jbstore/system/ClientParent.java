@@ -14,12 +14,13 @@ public class ClientParent extends ComponentDefinition {
 
     public ClientParent(Init init) {
         Component node = create(Client.class, new Client.Init(init.self, init.member));
-        connect(node.getNegative(Network.class), requires(Network.class), Channel.TWO_WAY);
-        connect(node.getNegative(Timer.class), requires(Timer.class), Channel.TWO_WAY);
 
         if (init.deploy) {
             connect(node.getNegative(Network.class), create(NettyNetwork.class, new NettyInit(init.self)).getPositive(Network.class), Channel.TWO_WAY);
             connect(node.getNegative(Timer.class), create(JavaTimer.class, Init.NONE).getPositive(Timer.class), Channel.TWO_WAY);
+        } else {
+            connect(node.getNegative(Network.class), requires(Network.class), Channel.TWO_WAY);
+            connect(node.getNegative(Timer.class), requires(Timer.class), Channel.TWO_WAY);
         }
     }
 

@@ -112,7 +112,7 @@ public class ViewSync extends SubComponent {
         HashMap<Integer, HashSet<TAddress>> replicationGroups = new HashMap<>();
         replicationGroups.put(id, getReplicationGroup(id));
         ListIterator<Integer> it = Util.getSortedList(view.keySet()).listIterator();
-        while (it.next() != id);
+        while (it.next() != id) ;
         for (int i = 0; i <= KVStore.REPLICATION_DEGREE - 1; i++) {
             if (!it.hasPrevious()) {
                 it = Util.getSortedList(view.keySet()).listIterator();
@@ -127,7 +127,7 @@ public class ViewSync extends SubComponent {
             }
         }
         for (int groupId : replicationGroups.keySet()) {
-            System.out.println("Node" + id + ": replicationGroup"+ groupId + ": " +replicationGroups.get(groupId));
+            System.out.println("Node" + id + ": replicationGroup" + groupId + ": " + replicationGroups.get(groupId));
         }
         return replicationGroups;
     }
