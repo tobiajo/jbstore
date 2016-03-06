@@ -1,7 +1,5 @@
 package se.kth.id2203.jbstore.system;
 
-import com.google.common.hash.Hashing;
-import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,7 +83,7 @@ public class Client extends ComponentDefinition {
 
     private int getGroupId(String key) {
         long range = Long.MAX_VALUE / view.size() * 2 + 1;
-        return (int) (getHash(key) / range + view.size() / 2);
+        return (int) (Util.getHash(key) / range + view.size() / 2);
     }
 
     private int getRndNode(int groupId) {
@@ -105,10 +103,6 @@ public class Client extends ComponentDefinition {
             group.add(it.next());
         }
         return group;
-    }
-
-    private long getHash(Serializable value) {
-        return Hashing.murmur3_128().hashBytes(SerializationUtils.serialize(value)).asLong();
     }
 
     private void put(int nodeId, int groupId, String key, Serializable value) {
