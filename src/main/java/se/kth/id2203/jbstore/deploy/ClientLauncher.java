@@ -11,13 +11,13 @@ public class ClientLauncher extends AbstractLauncher {
 
     public static void main(String[] args) {
         try {
-            if (args.length == 4) {
+            if (args.length == 5) {
                 TAddress self = new TAddress(InetAddress.getByName(args[0]), Integer.parseInt(args[1]));
                 TAddress member = new TAddress(InetAddress.getByName(args[2]), Integer.parseInt(args[3]));
-                System.out.println("Starting client at " + self + " for 10 s");
+                System.out.println("Starting client at " + self + " for " + args[4] + " s");
                 Kompics.createAndStart(ClientParent.class, new ClientParent.Init(true, self, member));
                 try {
-                    Thread.sleep(10000);
+                    Thread.sleep(Integer.parseInt(args[4]) * 1000);
                 } catch (InterruptedException ex) {
                     System.err.println(ex);
                     System.exit(1);
