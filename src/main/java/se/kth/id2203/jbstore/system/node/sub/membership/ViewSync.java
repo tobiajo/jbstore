@@ -1,6 +1,6 @@
 package se.kth.id2203.jbstore.system.node.sub.membership;
 
-import se.kth.id2203.jbstore.system.Util;
+import se.kth.id2203.jbstore.Util;
 import se.kth.id2203.jbstore.system.node.sub.SubComponent;
 import se.kth.id2203.jbstore.system.node.sub.application.KVStore;
 import se.kth.id2203.jbstore.system.node.sub.application.KVStorePort;

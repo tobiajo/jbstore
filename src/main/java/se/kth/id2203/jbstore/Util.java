@@ -1,4 +1,4 @@
-package se.kth.id2203.jbstore.system;
+package se.kth.id2203.jbstore;
 
 import java.util.Collection;
 import java.util.Collections;
