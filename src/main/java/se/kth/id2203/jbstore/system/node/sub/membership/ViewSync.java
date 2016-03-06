@@ -98,12 +98,12 @@ public class ViewSync extends SubComponent {
             }
         }
         if (leaderId == id) {
-            System.out.println("Node" + id + ": nodesToMonitor:   " + nodesToMonitor);
+            System.out.println("Node" + id + ": nodesToMonitor:    " + nodesToMonitor);
             return nodesToMonitor;
         } else {
             nodesToMonitor.clear();
             nodesToMonitor.add(view.get(leaderId));
-            System.out.println("Node" + id + ": nodesToMonitor:   " + nodesToMonitor);
+            System.out.println("Node" + id + ": nodesToMonitor:    " + nodesToMonitor);
             return nodesToMonitor;
         }
     }

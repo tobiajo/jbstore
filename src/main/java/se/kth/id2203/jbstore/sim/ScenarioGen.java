@@ -18,7 +18,7 @@ import java.net.UnknownHostException;
 public class ScenarioGen {
 
     public static final String IP = "127.0.0.0";
-    public static final int NODES = 6;
+    public static final int NODES = 10;
 
     static Operation1 startCreatorOp = new Operation1<StartNodeEvent, Integer>() {
 
