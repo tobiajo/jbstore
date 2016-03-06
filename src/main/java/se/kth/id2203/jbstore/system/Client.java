@@ -65,6 +65,8 @@ public class Client extends ComponentDefinition {
         subscribe(msgHandler, networkPositive);
     }
 
+    // Client interface
+
     private void viewRequest() {
         send(member, NodeMsg.VIEW_SYNC, NodeMsg.VIEW_REQUEST, 0, null);
     }
@@ -81,29 +83,7 @@ public class Client extends ComponentDefinition {
         get(nodeId, groupId, key);
     }
 
-    private int getGroupId(String key) {
-        long range = Long.MAX_VALUE / view.size() * 2 + 1;
-        return (int) (Util.getHash(key) / range + view.size() / 2);
-    }
-
-    private int getRndNode(int groupId) {
-        LinkedList<Integer> group = getGroup(groupId);
-        return group.get(rnd.nextInt(group.size()));
-    }
-
-    private LinkedList<Integer> getGroup(int nodeId) {
-        LinkedList<Integer> group = new LinkedList<>();
-        group.add(nodeId);
-        ListIterator<Integer> it = Util.getSortedList(view.keySet()).listIterator();
-        while (it.next() != nodeId) ;
-        for (int i = 0; i < KVStore.REPLICATION_DEGREE - 1; i++) {
-            if (!it.hasNext()) {
-                it = Util.getSortedList(view.keySet()).listIterator();
-            }
-            group.add(it.next());
-        }
-        return group;
-    }
+    // Helper methods
 
     private void put(int nodeId, int groupId, String key, Serializable value) {
         send(view.get(nodeId), NodeMsg.KV_STORE, NodeMsg.PUT, groupId, Pair.of(key, value));
@@ -118,6 +98,32 @@ public class Client extends ComponentDefinition {
         trigger(nodeMsg, networkPositive);
         log.info("Sent: " + nodeMsg.toString());
     }
+
+    private int getGroupId(String key) {
+        long range = Long.MAX_VALUE / view.size() * 2 + 1;
+        return (int) (Util.getHash(key) / range + view.size() / 2);
+    }
+
+    private int getRndNode(int groupId) {
+        LinkedList<Integer> group = getMainGroup(groupId);
+        return group.get(rnd.nextInt(group.size()));
+    }
+
+    private LinkedList<Integer> getMainGroup(int nodeId) {
+        LinkedList<Integer> group = new LinkedList<>();
+        group.add(nodeId);
+        ListIterator<Integer> it = Util.getSortedList(view.keySet()).listIterator();
+        while (it.next() != nodeId) ;
+        for (int i = 0; i < KVStore.REPLICATION_DEGREE - 1; i++) {
+            if (!it.hasNext()) {
+                it = Util.getSortedList(view.keySet()).listIterator();
+            }
+            group.add(it.next());
+        }
+        return group;
+    }
+
+    // Static nested class
 
     public static class Init extends se.sics.kompics.Init<Client> {
 
