@@ -14,8 +14,17 @@ public class ClientLauncher extends AbstractLauncher {
             if (args.length == 4) {
                 TAddress self = new TAddress(InetAddress.getByName(args[0]), Integer.parseInt(args[1]));
                 TAddress member = new TAddress(InetAddress.getByName(args[2]), Integer.parseInt(args[3]));
+                System.out.println("Starting client at " + self + " for 10 s");
                 Kompics.createAndStart(ClientParent.class, new ClientParent.Init(true, self, member));
-                System.out.println("Starting client at " + self);
+                try {
+                    Thread.sleep(10000);
+                } catch (InterruptedException ex) {
+                    System.err.println(ex);
+                    System.exit(1);
+                }
+                System.out.println("Shutting down client at " + self);
+                Kompics.shutdown();
+                System.exit(0);
             } else {
                 System.err.println("Invalid number of parameters");
                 System.exit(1);
