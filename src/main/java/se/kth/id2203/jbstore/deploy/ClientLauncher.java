@@ -29,7 +29,6 @@ public class ClientLauncher extends AbstractLauncher {
                 System.err.println("Invalid number of parameters");
                 System.exit(1);
             }
-
         } catch (UnknownHostException ex) {
             System.err.println(ex);
             System.exit(1);

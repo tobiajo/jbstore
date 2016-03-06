@@ -7,7 +7,7 @@ import se.sics.test.NetSerializer;
 import se.sics.test.TAddress;
 import se.sics.test.THeader;
 
-public class AbstractLauncher {
+public abstract class AbstractLauncher {
 
     static {
         // register
