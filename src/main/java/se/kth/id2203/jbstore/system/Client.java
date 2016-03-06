@@ -36,7 +36,7 @@ public class Client extends ComponentDefinition {
     private Handler<Start> startHandler = new Handler<Start>() {
         @Override
         public void handle(Start start) {
-            //viewRequest();
+            viewRequest();
         }
     };
 
