@@ -15,7 +15,6 @@ public class SubComponent extends ComponentDefinition {
     private final Positive<NodePort> nodePortPositive = requires(NodePort.class);
     protected byte comp;
 
-
     protected void send(TAddress dst, long rid, byte cmd, int inst, Serializable body) {
         trigger(new NodeMsgSend(dst, rid, comp, cmd, inst, body), nodePortPositive);
     }
