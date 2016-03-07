@@ -166,6 +166,7 @@ public class ScenarioGen {
                     }
                 };
 
+
                 creator.start();
                 joiner.startAfterTerminationOf(1000, creator);
                 client.startAfterTerminationOf(1000, joiner);

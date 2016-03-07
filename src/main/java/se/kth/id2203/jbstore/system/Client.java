@@ -17,7 +17,7 @@ import java.util.*;
 public class Client extends ComponentDefinition {
 
     private List<TimeStamp> history = new ArrayList<>();
-    private Positive<ClientPort> inputPositive = requires(ClientPort.class);
+    private final Positive<ClientPort> inputPositive = requires(ClientPort.class);
 
     private final Positive<Network> networkPositive = requires(Network.class);
     private final Positive<Timer> timerPositive = requires(Timer.class);
@@ -40,6 +40,10 @@ public class Client extends ComponentDefinition {
         @Override
         public void handle(Start start) {
             viewRequest();
+
+            Component input = create(Input.class, Init.NONE);
+            connect(provides(ClientPort.class),input.getPositive(ClientPort.class), Channel.TWO_WAY);
+
         }
     };
 
@@ -67,13 +71,18 @@ public class Client extends ComponentDefinition {
         public void handle(ClientPort.Request request) {
             switch (request.type){
                 case GET:
+                    System.out.println("boo");
                     get(request.key);
                     break;
                 case PUT:
+                    System.out.println("boo1");
                     put(request.key, request.value);
                     break;
                 case HISTORY:
-                    history.stream().forEach(System.out::println);
+                    System.out.println("boo2");
+                    for (TimeStamp time : history){
+                        log.info(time.toString());
+                    }
                     break;
             }
         }
