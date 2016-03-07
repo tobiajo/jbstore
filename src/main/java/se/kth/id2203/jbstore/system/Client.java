@@ -74,13 +74,13 @@ public class Client extends ComponentDefinition {
                     break;
                 case PUT:
                     System.out.println("boo1");
-                    //put(request.key, request.value);
+                    put(request.key, request.value);
                     break;
                 case HISTORY:
                     System.out.println("boo2");
-                    /*for (TimeStamp time : history){
+                    for (TimeStamp time : history){
                         log.info(time.toString());
-                    }*/
+                    }
                     break;
             }
         }
