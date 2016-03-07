@@ -69,18 +69,20 @@ public class Client extends ComponentDefinition {
         public void handle(InputGenPort.Request request) {
             switch (request.type) {
                 case GET:
-                    System.out.println("boo");
+                    //System.out.println("boo");
                     get(request.key);
                     break;
                 case PUT:
-                    System.out.println("boo1");
+                    //System.out.println("boo1");
                     put(request.key, request.value);
                     break;
                 case HISTORY:
-                    System.out.println("boo2");
+                    //System.out.println("boo2");
+                    log.info("=== HISTORY ===");
                     for (TimeStamp time : history){
                         log.info(time.toString());
                     }
+                    log.info("=== END OF HISTORY ===");
                     break;
             }
         }
