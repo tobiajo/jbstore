@@ -15,6 +15,7 @@ public class ClientParent extends ComponentDefinition {
     public ClientParent(Init init) {
 
         Component node = create(Client.class, new Client.Init(init.self, init.member));
+        Component input = create(InputGen.class, se.sics.kompics.Init.NONE);
 
         if (init.deploy) {
             connect(node.getNegative(Network.class), create(NettyNetwork.class, new NettyInit(init.self)).getPositive(Network.class), Channel.TWO_WAY);
@@ -24,7 +25,7 @@ public class ClientParent extends ComponentDefinition {
             connect(node.getNegative(Timer.class), requires(Timer.class), Channel.TWO_WAY);
         }
 
-
+        connect(input.getNegative(InputGenPort.class), node.getPositive(InputGenPort.class), Channel.TWO_WAY);
     }
 
     public static class Init extends se.sics.kompics.Init<ClientParent> {

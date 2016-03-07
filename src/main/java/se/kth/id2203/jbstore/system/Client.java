@@ -17,7 +17,7 @@ import java.util.*;
 public class Client extends ComponentDefinition {
 
     private List<TimeStamp> history = new ArrayList<>();
-    private final Positive<ClientPort> inputPositive = requires(ClientPort.class);
+    private final Negative<InputGenPort> inputPortNegative = provides(InputGenPort.class);
 
     private final Positive<Network> networkPositive = requires(Network.class);
     private final Positive<Timer> timerPositive = requires(Timer.class);
@@ -40,10 +40,6 @@ public class Client extends ComponentDefinition {
         @Override
         public void handle(Start start) {
             viewRequest();
-
-            Component input = create(Input.class, Init.NONE);
-            connect(provides(ClientPort.class),input.getPositive(ClientPort.class), Channel.TWO_WAY);
-
         }
     };
 
@@ -55,6 +51,7 @@ public class Client extends ComponentDefinition {
                 case NodeMsg.VIEW:
                     view = (HashMap<Integer, TAddress>) nodeMsg.body;
                     recordEvent("got view");
+                    trigger(new InputGenPort.Init(), inputPortNegative);
                     break;
                 case NodeMsg.PUT_RESPONSE:
                     recordEvent("PUT_RESPONSE: " + nodeMsg.body);
@@ -66,23 +63,23 @@ public class Client extends ComponentDefinition {
         }
     };
 
-    private Handler<ClientPort.Request> inputHandler = new Handler<ClientPort.Request>() {
+    private Handler<InputGenPort.Request> inputHandler = new Handler<InputGenPort.Request>() {
         @Override
-        public void handle(ClientPort.Request request) {
-            switch (request.type){
+        public void handle(InputGenPort.Request request) {
+            switch (request.type) {
                 case GET:
                     System.out.println("boo");
                     get(request.key);
                     break;
                 case PUT:
                     System.out.println("boo1");
-                    put(request.key, request.value);
+                    //put(request.key, request.value);
                     break;
                 case HISTORY:
                     System.out.println("boo2");
-                    for (TimeStamp time : history){
+                    /*for (TimeStamp time : history){
                         log.info(time.toString());
-                    }
+                    }*/
                     break;
             }
         }
@@ -91,7 +88,7 @@ public class Client extends ComponentDefinition {
     {
         subscribe(startHandler, control);
         subscribe(msgHandler, networkPositive);
-        subscribe(inputHandler, inputPositive);
+        subscribe(inputHandler, inputPortNegative);
     }
 
     // Client interface
@@ -165,7 +162,7 @@ public class Client extends ComponentDefinition {
         }
     }
 
-    private void recordEvent(String event){
+    private void recordEvent(String event) {
         this.history.add(new TimeStamp(new Date(System.nanoTime()), event));
     }
 
@@ -173,13 +170,13 @@ public class Client extends ComponentDefinition {
         public final Date date;
         public final String event;
 
-        public TimeStamp(Date date, String event){
+        public TimeStamp(Date date, String event) {
             this.date = date;
             this.event = event;
         }
 
         @Override
-        public String toString(){
+        public String toString() {
             return this.date.toString() + ": " + this.event;
         }
 
