@@ -52,6 +52,7 @@ public class Client extends ComponentDefinition {
                     view = (HashMap<Integer, TAddress>) nodeMsg.body;
                     recordEvent("got view");
                     trigger(new InputGenPort.Init(), inputPortNegative);
+                    recordEvent("initiated input generator");
                     break;
                 case NodeMsg.PUT_RESPONSE:
                     recordEvent("PUT_RESPONSE: " + nodeMsg.body);
