@@ -16,6 +16,9 @@ import java.util.*;
 
 public class Client extends ComponentDefinition {
 
+    private List<TimeStamp> history = new ArrayList<>();
+    private Positive<ClientPort> inputPositive = requires(ClientPort.class);
+
     private final Positive<Network> networkPositive = requires(Network.class);
     private final Positive<Timer> timerPositive = requires(Timer.class);
     private final Random rnd = new Random();
@@ -47,14 +50,30 @@ public class Client extends ComponentDefinition {
             switch (nodeMsg.cmd) {
                 case NodeMsg.VIEW:
                     view = (HashMap<Integer, TAddress>) nodeMsg.body;
-                    put("key", "secret cat");
-                    put("key2", "secret cat2");
+                    recordEvent("got view");
                     break;
                 case NodeMsg.PUT_RESPONSE:
-                    get("key");
-                    get("key2");
+                    recordEvent("PUT_RESPONSE: " + nodeMsg.body);
                     break;
                 case NodeMsg.GET_RESPONSE:
+                    recordEvent("GET_RESPONSE: " + nodeMsg.body);
+                    break;
+            }
+        }
+    };
+
+    private Handler<ClientPort.Request> inputHandler = new Handler<ClientPort.Request>() {
+        @Override
+        public void handle(ClientPort.Request request) {
+            switch (request.type){
+                case GET:
+                    get(request.key);
+                    break;
+                case PUT:
+                    put(request.key, request.value);
+                    break;
+                case HISTORY:
+                    history.stream().forEach(System.out::println);
                     break;
             }
         }
@@ -63,6 +82,7 @@ public class Client extends ComponentDefinition {
     {
         subscribe(startHandler, control);
         subscribe(msgHandler, networkPositive);
+        subscribe(inputHandler, inputPositive);
     }
 
     // Client interface
@@ -123,7 +143,7 @@ public class Client extends ComponentDefinition {
         return group;
     }
 
-    // Static nested class
+    // Static nested class <- you don't say ;D
 
     public static class Init extends se.sics.kompics.Init<Client> {
 
@@ -134,5 +154,25 @@ public class Client extends ComponentDefinition {
             this.self = self;
             this.member = member;
         }
+    }
+
+    private void recordEvent(String event){
+        this.history.add(new TimeStamp(new Date(System.nanoTime()), event));
+    }
+
+    private static class TimeStamp {
+        public final Date date;
+        public final String event;
+
+        public TimeStamp(Date date, String event){
+            this.date = date;
+            this.event = event;
+        }
+
+        @Override
+        public String toString(){
+            return this.date.toString() + ": " + this.event;
+        }
+
     }
 }
